@@ -93,7 +93,7 @@
             const durations = {
                 work: workMinutes * 60,
                 break: breakMinutes * 60
-            };
+            };//½Ã°£°ü¸®
 
             function runTimer(duration) {
                 let timeLeft = duration;
@@ -108,7 +108,7 @@
                         if (timeLeft <= 0) {
                             clearInterval(interval);
 
-                            // ì•ŒëžŒ: ì§‘ì¤‘ì‹œê°„ ì¢…ë£Œ ì‹œë§Œ ì‹¤í–‰
+                            // ?•Œ?žŒ: ì§‘ì¤‘?‹œê°? ì¢…ë£Œ ?‹œë§? ?‹¤?–‰
                             if (isWork && document.getElementById("alarmToggle").checked) {
                                 document.getElementById("alarmSound").play();
                             }
