@@ -17,10 +17,10 @@ def save_record():
         f"Task Type: {data['task']}\n"
         f"{'-'*30}\n"
     )
-
+    
     with open("record.txt", "a", encoding="utf-8") as f:
         f.write(record)
-
+        
     return {"status": "saved"}
 
 if __name__ == "__main__":
