@@ -3,19 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Pomodoro Web</title>
-    <style>
-        body {
-            font-family: Arial;
-            text-align: center;
-            margin: 40px;
-        }
-        .section {
-            margin: 15px 0;
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <h1>Pomodoro Timer</h1>
@@ -60,121 +48,28 @@
         <button onclick="stopPomodoro()" id="stopBtn" class="hidden">Stop</button>
     </div>
 
+    <div id="feedback" class="section hidden">
+        <h3>Session Feedback</h3>
+        <div>
+            <p>Was the focus duration sufficient?</p>
+            <label><input type="radio" name="focusFeedback" value="Very insufficient"> Very insufficient</label><br>
+            <label><input type="radio" name="focusFeedback" value="Slightly insufficient"> Slightly insufficient</label><br>
+            <label><input type="radio" name="focusFeedback" value="Adequate" checked> Adequate</label><br>
+            <label><input type="radio" name="focusFeedback" value="Slightly excessive"> Slightly excessive</label><br>
+            <label><input type="radio" name="focusFeedback" value="Very excessive"> Very excessive</label>
+        </div>
+        <div>
+            <p>Was the break duration sufficient?</p>
+            <label><input type="radio" name="breakFeedback" value="Very insufficient"> Very insufficient</label><br>
+            <label><input type="radio" name="breakFeedback" value="Slightly insufficient"> Slightly insufficient</label><br>
+            <label><input type="radio" name="breakFeedback" value="Adequate" checked> Adequate</label><br>
+            <label><input type="radio" name="breakFeedback" value="Slightly excessive"> Slightly excessive</label><br>
+            <label><input type="radio" name="breakFeedback" value="Very excessive"> Very excessive</label>
+        </div>
+        <button onclick="submitFeedback()">Submit Feedback</button>
+    </div>
+
     <audio id="alarmSound" src="/static/alarm.mp3" preload="auto"></audio>
-
-    <script>
-        let isWork = true;
-        let interval;
-        let totalRepeats = 1;
-        let currentRepeat = 0;
-        let isPaused = false;
-
-        function getRadioValue(name) {
-            const radios = document.getElementsByName(name);
-            for (const radio of radios) {
-                if (radio.checked) return radio.value;
-            }
-            return "";
-        }
-
-        function startPomodoro() {
-            const workMinutes = parseInt(document.getElementById("workMinutes").value) || 25;
-            const breakMinutes = parseInt(document.getElementById("breakMinutes").value) || 5;
-            totalRepeats = parseInt(document.getElementById("repeatCount").value) || 1;
-
-            const focus = getRadioValue("focus");
-            const flow = getRadioValue("flow");
-            const task = getRadioValue("task");
-
-            hideSettings();
-            isWork = true;
-            currentRepeat = 0;
-
-            const durations = {
-                work: workMinutes * 60,
-                break: breakMinutes * 60
-            };//시간관리
-
-            function runTimer(duration) {
-                let timeLeft = duration;
-                updateTimerDisplay(timeLeft);
-                document.body.style.backgroundColor = isWork ? "#FF6347" : "#4CAF50";
-
-                clearInterval(interval);
-                interval = setInterval(() => {
-                    if (!isPaused) {
-                        timeLeft--;
-                        updateTimerDisplay(timeLeft);
-                        if (timeLeft <= 0) {
-                            clearInterval(interval);
-
-                            // ?븣?엺: 吏묒쨷?떆媛? 醫낅즺 ?떆留? ?떎?뻾
-                            if (isWork && document.getElementById("alarmToggle").checked) {
-                                document.getElementById("alarmSound").play();
-                            }
-
-                            if (!isWork) currentRepeat++;
-                            if (currentRepeat < totalRepeats) {
-                                isWork = !isWork;
-                                runTimer(isWork ? durations.work : durations.break);
-                            } else {
-                                saveRecord(focus, flow, task);
-                                alert("Pomodoro session complete!");
-                                resetUI();
-                            }
-                        }
-                    }
-                }, 1000);
-            }
-
-            runTimer(durations.work);
-        }
-
-        function pausePomodoro() {
-            isPaused = !isPaused;
-            document.getElementById("pauseBtn").textContent = isPaused ? "Resume" : "Pause";
-        }
-
-        function stopPomodoro() {
-            clearInterval(interval);
-            resetUI();
-        }
-
-        function resetUI() {
-            document.body.style.backgroundColor = "#ffffff";
-            showSettings();
-            updateTimerDisplay(0);
-            isPaused = false;
-        }
-
-        function updateTimerDisplay(seconds) {
-            const m = String(Math.floor(seconds / 60)).padStart(2, "0");
-            const s = String(seconds % 60).padStart(2, "0");
-            document.getElementById("timer").textContent = `${m}:${s}`;
-        }
-
-        function hideSettings() {
-            document.getElementById("settings").classList.add("hidden");
-            document.getElementById("pauseBtn").classList.remove("hidden");
-            document.getElementById("stopBtn").classList.remove("hidden");
-        }
-
-        function showSettings() {
-            document.getElementById("settings").classList.remove("hidden");
-            document.getElementById("pauseBtn").classList.add("hidden");
-            document.getElementById("stopBtn").classList.add("hidden");
-            document.getElementById("pauseBtn").textContent = "Pause";
-        }
-
-        function saveRecord(focus, flow, task) {
-            fetch("/save_record", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ focus, flow, task, timestamp: new Date().toISOString() })
-            });
-        }
-    </script>
+    <script src="/static/script.js"></script>
 </body>
 </html>

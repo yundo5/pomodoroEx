@@ -1,0 +1,19 @@
+body {
+    font-family: Arial;
+    text-align: center;
+    margin: 40px;
+}
+.section {
+    margin: 15px 0;
+}
+.hidden {
+    display: none;
+}
+table {
+    margin: 0 auto;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 8px;
+    border: 1px solid #aaa;
+}
