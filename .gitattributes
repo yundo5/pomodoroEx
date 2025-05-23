@@ -1,0 +1,8 @@
+# .bat, .py, .txt 파일을 UTF-8로 인코딩 강제
+*.bat text working-tree-encoding=UTF-8
+*.py text working-tree-encoding=UTF-8
+*.txt text working-tree-encoding=UTF-8
+
+# 마크다운/HTML 파일 등도 포함하려면
+*.md text working-tree-encoding=UTF-8
+*.html text working-tree-encoding=UTF-8
