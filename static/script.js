@@ -4,12 +4,29 @@ let totalRepeats = 1;
 let currentRepeat = 0;
 let isPaused = false;
 
+// ✅ 애니메이션 관련 요소 참조
+const bgVideo = document.getElementById("bgVideo");
+const animationToggle = document.getElementById("animationToggle");
+
 function getRadioValue(name) {
     const radios = document.getElementsByName(name);
     for (const radio of radios) {
         if (radio.checked) return radio.value;
     }
     return "";
+}
+
+// ✅ 애니메이션 상태 제어 함수
+function updateAnimationState(on) {
+    if (on) {
+        bgVideo.removeAttribute("hidden");
+        bgVideo.muted = false;
+        bgVideo.play();
+    } else {
+        bgVideo.setAttribute("hidden", true);
+        bgVideo.pause();
+        bgVideo.currentTime = 0;
+    }
 }
 
 function startPomodoro() {
@@ -33,7 +50,13 @@ function startPomodoro() {
     function runTimer(duration) {
         let timeLeft = duration;
         updateTimerDisplay(timeLeft);
-        document.body.style.backgroundColor = isWork ? "#FF6347" : "#4CAF50";
+
+        // ✅ 배경색: 애니메이션이 꺼져 있을 때만 적용
+        if (!animationToggle.checked) {
+            document.body.style.backgroundColor = isWork ? "#FF6347" : "#4CAF50";
+        } else {
+            document.body.style.backgroundColor = "transparent";
+        }
 
         clearInterval(interval);
         interval = setInterval(() => {
@@ -49,9 +72,15 @@ function startPomodoro() {
 
                     if (!isWork) currentRepeat++;
                     if (currentRepeat < totalRepeats) {
+                        // ✅ 집중 → 휴식 전환이면 애니메이션 끄기
+                        if (isWork && animationToggle.checked) {
+                            updateAnimationState(false);
+                        }
+
                         isWork = !isWork;
                         runTimer(isWork ? durations.work : durations.break);
                     } else {
+                        updateAnimationState(false);  // 마지막 반복 종료 시
                         document.getElementById("feedback").classList.remove("hidden");
                     }
                 }
@@ -60,6 +89,10 @@ function startPomodoro() {
     }
 
     runTimer(durations.work);
+
+    if (animationToggle.checked) {
+        updateAnimationState(true);  // ✅ 애니메이션 시작
+    }
 }
 
 function pausePomodoro() {
@@ -69,11 +102,13 @@ function pausePomodoro() {
 
 function stopPomodoro() {
     clearInterval(interval);
+    updateAnimationState(false);
     resetUI();
 }
 
 function resetUI() {
-    document.body.style.backgroundColor = "#ffffff";
+    // ✅ 애니메이션 여부에 따라 배경 리셋
+    document.body.style.backgroundColor = animationToggle.checked ? "transparent" : "#ffffff";
     showSettings();
     updateTimerDisplay(0);
     isPaused = false;
