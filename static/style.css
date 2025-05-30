@@ -28,3 +28,14 @@ th, td {
     z-index: -1;
     border-radius: 10px;
 }
+.music-option {
+    margin: 5px;
+    padding: 10px;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 5px;
+}
+.music-option:hover {
+    background-color: #e0e0e0;
+}

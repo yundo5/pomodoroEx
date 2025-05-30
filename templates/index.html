@@ -1,85 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Pomodoro Web</title>
+    <title>Pomodoro 웹</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>Pomodoro Timer</h1>
-     <video id="bgVideo" autoplay loop hidden>
+    <h1>Pomodoro 타이머</h1>
+    <video id="bgVideo" autoplay loop hidden>
         <source src="{{ url_for('static', filename='animation/background.mp4') }}" type="video/mp4">
-        Your browser does not support the video tag.
+        브라우저가 video 태그를 지원하지 않습니다.
     </video>
+
     <div id="settings">
         <div class="section">
-            <a href="/stats"><button>View Statistics</button></a>
-        </div>
-        
-        <div class="section">
-            <label>Work (min): <input type="number" id="workMinutes" value="25"></label>
-            <label>Break (min): <input type="number" id="breakMinutes" value="5"></label>
-            <label>Repeat count (1~5): <input type="number" id="repeatCount" value="1" min="1" max="5"></label>
+            <a href="/stats"><button>통계 보기</button></a>
         </div>
 
         <div class="section">
-            <strong>Focus Level:</strong><br>
-            <label><input type="radio" name="focus" value="High"> High</label>
-            <label><input type="radio" name="focus" value="Medium" checked> Medium</label>
-            <label><input type="radio" name="focus" value="Low"> Low</label>
+            <label>작업 시간 (분): <input type="number" id="workMinutes" value="25"></label>
+            <label>휴식 시간 (분): <input type="number" id="breakMinutes" value="5"></label>
+            <label>반복 횟수 (1~5): <input type="number" id="repeatCount" value="1" min="1" max="5"></label>
         </div>
 
         <div class="section">
-            <strong>Work Flow:</strong><br>
-            <label><input type="radio" name="flow" value="Fast" checked> Fast</label>
-            <label><input type="radio" name="flow" value="Relaxed"> Relaxed</label>
-            <label><input type="radio" name="flow" value="Find Rhythm"> Find Rhythm</label>
+            <strong>집중도:</strong><br>
+            <label><input type="radio" name="focus" value="High"> 높음</label>
+            <label><input type="radio" name="focus" value="Medium" checked> 중간</label>
+            <label><input type="radio" name="focus" value="Low"> 낮음</label>
         </div>
 
         <div class="section">
-            <strong>Task Type:</strong><br>
-            <label><input type="radio" name="task" value="Writing" checked> Writing</label>
-            <label><input type="radio" name="task" value="Repetitive Task"> Repetitive Task</label>
-            <label><input type="radio" name="task" value="Creative Thinking"> Creative Thinking</label>
+            <strong>작업 흐름:</strong><br>
+            <label><input type="radio" name="flow" value="Fast" checked> 빠름</label>
+            <label><input type="radio" name="flow" value="Relaxed"> 여유롭게</label>
+            <label><input type="radio" name="flow" value="Find Rhythm"> 리듬 찾기</label>
         </div>
 
         <div class="section">
-            <label><input type="checkbox" id="alarmToggle" checked> Enable Alarm Sound</label>
+            <strong>작업 유형:</strong><br>
+            <label><input type="radio" name="task" value="Writing" checked> 글쓰기</label>
+            <label><input type="radio" name="task" value="Repetitive Task"> 반복 작업</label>
+            <label><input type="radio" name="task" value="Creative Thinking"> 창의적 사고</label>
+        </div>
+
+        <div class="section">
+            <label><input type="checkbox" id="alarmToggle" checked> 알람 소리 활성화</label>
         </div>
         <div class="section">
-            <label><input type="checkbox" id="animationToggle" checked> Enable Background Animation</label>
+            <label><input type="checkbox" id="animationToggle" checked> 배경 애니메이션 활성화</label>
+        </div>
+
+        <div class="section">
+            <strong>배경 음악 선택:</strong><br>
+            <button id="musicOcean">Ocean</button>
+            <button id="musicHeater">Heater</button>
+            <button id="musicRain">Rain</button>
         </div>
     </div>
 
     <div class="section">
         <h2 id="timer">25:00</h2>
-        <button onclick="startPomodoro()">Start</button>
-        <button onclick="pausePomodoro()" id="pauseBtn" class="hidden">Pause</button>
-        <button onclick="stopPomodoro()" id="stopBtn" class="hidden">Stop</button>
+        <button onclick="startPomodoro()">시작</button>
+        <button onclick="pausePomodoro()" id="pauseBtn" class="hidden">일시정지</button>
+        <button onclick="stopPomodoro()" id="stopBtn" class="hidden">중지</button>
     </div>
 
     <div id="feedback" class="section hidden">
-        <h3>Session Feedback</h3>
+        <h3>세션 피드백</h3>
         <div>
-            <p>Was the focus duration sufficient?</p>
-            <label><input type="radio" name="focusFeedback" value="Very insufficient"> Very insufficient</label><br>
-            <label><input type="radio" name="focusFeedback" value="Slightly insufficient"> Slightly insufficient</label><br>
-            <label><input type="radio" name="focusFeedback" value="Adequate" checked> Adequate</label><br>
-            <label><input type="radio" name="focusFeedback" value="Slightly excessive"> Slightly excessive</label><br>
-            <label><input type="radio" name="focusFeedback" value="Very excessive"> Very excessive</label>
+            <p>집중 시간은 적절했나요?</p>
+            <label><input type="radio" name="focusFeedback" value="매우 부족함"> 매우 부족함</label><br>
+            <label><input type="radio" name="focusFeedback" value="조금 부족함"> 조금 부족함</label><br>
+            <label><input type="radio" name="focusFeedback" value="적절함" checked> 적절함</label><br>
+            <label><input type="radio" name="focusFeedback" value="조금 많음"> 조금 많음</label><br>
+            <label><input type="radio" name="focusFeedback" value="매우 많음"> 매우 많음</label>
         </div>
         <div>
-            <p>Was the break duration sufficient?</p>
-            <label><input type="radio" name="breakFeedback" value="Very insufficient"> Very insufficient</label><br>
-            <label><input type="radio" name="breakFeedback" value="Slightly insufficient"> Slightly insufficient</label><br>
-            <label><input type="radio" name="breakFeedback" value="Adequate" checked> Adequate</label><br>
-            <label><input type="radio" name="breakFeedback" value="Slightly excessive"> Slightly excessive</label><br>
-            <label><input type="radio" name="breakFeedback" value="Very excessive"> Very excessive</label>
+            <p>휴식 시간은 적절했나요?</p>
+            <label><input type="radio" name="breakFeedback" value="매우 부족함"> 매우 부족함</label><br>
+            <label><input type="radio" name="breakFeedback" value="조금 부족함"> 조금 부족함</label><br>
+            <label><input type="radio" name="breakFeedback" value="적절함" checked> 적절함</label><br>
+            <label><input type="radio" name="breakFeedback" value="조금 많음"> 조금 많음</label><br>
+            <label><input type="radio" name="breakFeedback" value="매우 많음"> 매우 많음</label>
         </div>
-        <button onclick="submitFeedback()">Submit Feedback</button>
+        <button onclick="submitFeedback()">피드백 제출</button>
     </div>
 
     <audio id="alarmSound" src="/static/alarm.mp3" preload="auto"></audio>
+    <audio id="bgMusic" preload="auto" loop></audio>
+
     <script src="/static/script.js"></script>
 </body>
 </html>
