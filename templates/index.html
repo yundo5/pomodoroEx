@@ -6,12 +6,11 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>Pomodoro 타이머</h1>
-
-    <!-- ✅ 배경 이미지 (화면 전체에 꽉 차도록) -->
     <img id="progressImage" src="/static/images/image1.png" alt="진행 이미지">
 
-    <div id="settings">
+    <h1 style="color: white; text-shadow: 1px 1px 4px black;">Pomodoro 타이머</h1>
+
+    <div id="settings" class="card">
         <div class="section">
             <a href="/stats"><button>통계 보기</button></a>
         </div>
@@ -47,8 +46,6 @@
             <label><input type="checkbox" id="alarmToggle" checked> 알람 소리 활성화</label>
         </div>
 
-        <!-- animationToggle 제거됨 -->
-
         <div class="section">
             <strong>배경 음악 선택:</strong><br>
             <button id="musicOcean">Ocean</button>
@@ -57,14 +54,14 @@
         </div>
     </div>
 
-    <div class="section">
+    <div class="card centered">
         <h2 id="timer">25:00</h2>
         <button onclick="startPomodoro()">시작</button>
         <button onclick="pausePomodoro()" id="pauseBtn" class="hidden">일시정지</button>
         <button onclick="stopPomodoro()" id="stopBtn" class="hidden">중지</button>
     </div>
 
-    <div id="feedback" class="section hidden">
+    <div id="feedback" class="card hidden">
         <h3>세션 피드백</h3>
         <div>
             <p>집중 시간은 적절했나요?</p>

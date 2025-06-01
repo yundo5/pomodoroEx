@@ -38,9 +38,14 @@ def submit_feedback():
 
 @app.route("/stats")
 def stats():
-    records = load_records()
-    summary = summarize_feedback(records)
-    total_time = calculate_total_focus_time(records)
+    try:
+        records = load_records()
+        summary = summarize_feedback(records)
+        total_time = calculate_total_focus_time(records)
+    except Exception as e:
+        summary = {}
+        total_time = 0
+        print(f"[ERROR] stats page failed: {e}")
     return render_template("stats.html", summary=summary, total_time=total_time)
 
 if __name__ == "__main__":

@@ -1,9 +1,22 @@
 body {
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     text-align: center;
     margin: 40px;
+    color: #222;
 }
 
+/* 화면 전체에 배경 이미지 꽉 채우기 */
+#progressImage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -1;
+}
+
+/* 공통 구역 */
 .section {
     margin: 15px 0;
 }
@@ -12,6 +25,7 @@ body {
     display: none;
 }
 
+/* 통계 테이블 */
 table {
     margin: 0 auto;
     border-collapse: collapse;
@@ -22,6 +36,7 @@ th, td {
     border: 1px solid #aaa;
 }
 
+/* 배경 음악 버튼 */
 .music-option {
     margin: 5px;
     padding: 10px;
@@ -34,12 +49,21 @@ th, td {
 .music-option:hover {
     background-color: #e0e0e0;
 }
-#progressImage {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-    z-index: -1;
+
+/* ? 카드형 UI 박스 */
+.card {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 600px;
+    margin: 20px auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ? 타이머 + 버튼 중앙 정렬용 */
+.centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
