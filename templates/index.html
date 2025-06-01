@@ -7,10 +7,9 @@
 </head>
 <body>
     <h1>Pomodoro 타이머</h1>
-    <video id="bgVideo" autoplay loop hidden>
-        <source src="{{ url_for('static', filename='animation/background.mp4') }}" type="video/mp4">
-        브라우저가 video 태그를 지원하지 않습니다.
-    </video>
+
+    <!-- ✅ 배경 이미지 (화면 전체에 꽉 차도록) -->
+    <img id="progressImage" src="/static/images/image1.png" alt="진행 이미지">
 
     <div id="settings">
         <div class="section">
@@ -47,9 +46,8 @@
         <div class="section">
             <label><input type="checkbox" id="alarmToggle" checked> 알람 소리 활성화</label>
         </div>
-        <div class="section">
-            <label><input type="checkbox" id="animationToggle" checked> 배경 애니메이션 활성화</label>
-        </div>
+
+        <!-- animationToggle 제거됨 -->
 
         <div class="section">
             <strong>배경 음악 선택:</strong><br>

@@ -4,9 +4,8 @@ let totalRepeats = 1;
 let currentRepeat = 0;
 let isPaused = false;
 
-// 배경 애니메이션 관련 요소
-const bgVideo = document.getElementById("bgVideo");
-const animationToggle = document.getElementById("animationToggle");
+// 배경 이미지 관련 요소
+const progressImage = document.getElementById("progressImage");
 
 // 배경 음악 관련 요소
 const bgMusic = document.getElementById("bgMusic");
@@ -24,19 +23,6 @@ function getRadioValue(name) {
         if (radio.checked) return radio.value;
     }
     return "";
-}
-
-// 배경 애니메이션 상태 업데이트 함수
-function updateAnimationState(on) {
-    if (on) {
-        bgVideo.removeAttribute("hidden");
-        bgVideo.muted = false;
-        bgVideo.play();
-    } else {
-        bgVideo.setAttribute("hidden", true);
-        bgVideo.pause();
-        bgVideo.currentTime = 0;
-    }
 }
 
 // 배경 음악 재생 함수
@@ -82,19 +68,17 @@ function startPomodoro() {
     function runTimer(duration) {
         let timeLeft = duration;
         updateTimerDisplay(timeLeft);
+        updateProgressImage(0, duration);  // 초기 이미지 설정
 
-        // 배경 색상 설정: 애니메이션이 비활성화된 경우에만 적용
-        if (!animationToggle.checked) {
-            document.body.style.backgroundColor = isWork ? "#FF6347" : "#4CAF50";
-        } else {
-            document.body.style.backgroundColor = "transparent";
-        }
+        document.body.style.backgroundColor = isWork ? "#FF6347" : "#4CAF50";
 
         clearInterval(interval);
         interval = setInterval(() => {
             if (!isPaused) {
                 timeLeft--;
                 updateTimerDisplay(timeLeft);
+                updateProgressImage(duration - timeLeft, duration);  // 이미지 갱신
+
                 if (timeLeft <= 0) {
                     clearInterval(interval);
 
@@ -104,16 +88,10 @@ function startPomodoro() {
 
                     if (!isWork) currentRepeat++;
                     if (currentRepeat < totalRepeats) {
-                        // 작업 세션 종료 후 애니메이션 정지
-                        if (isWork && animationToggle.checked) {
-                            updateAnimationState(false);
-                        }
-
                         isWork = !isWork;
                         runTimer(isWork ? durations.work : durations.break);
                     } else {
-                        updateAnimationState(false);  // 모든 세션 종료 시
-                        stopBackgroundMusic();        // 배경 음악 정지
+                        stopBackgroundMusic();
                         document.getElementById("feedback").classList.remove("hidden");
                     }
                 }
@@ -122,11 +100,6 @@ function startPomodoro() {
     }
 
     runTimer(durations.work);
-
-    if (animationToggle.checked) {
-        updateAnimationState(true);  // 배경 애니메이션 시작
-    }
-
     playBackgroundMusic(); // 배경 음악 재생
 }
 
@@ -142,19 +115,18 @@ function pausePomodoro() {
 
 // Pomodoro 타이머 중지 함수
 function stopPomodoro() {
-    clearInterval(interval); // 타이머 중지
-    updateAnimationState(false); // 배경 애니메이션 정지
-    stopBackgroundMusic(); // 배경 음악 정지
-    resetUI(); // UI 초기화
+    clearInterval(interval);
+    stopBackgroundMusic();
+    resetUI();
 }
 
 // UI 초기화 함수
 function resetUI() {
-    // 배경 애니메이션 여부에 따른 배경 색상 설정
-    document.body.style.backgroundColor = animationToggle.checked ? "transparent" : "#ffffff";
-    showSettings(); // 설정 화면 표시
-    updateTimerDisplay(0); // 타이머 표시 초기화
-    isPaused = false; // 일시정지 상태 초기화
+    document.body.style.backgroundColor = "#ffffff";
+    showSettings();
+    updateTimerDisplay(0);
+    isPaused = false;
+    if (progressImage) progressImage.src = "/static/images/image1.jpg";  // 초기 이미지 복원
 }
 
 // 타이머 표시 업데이트 함수
@@ -162,6 +134,14 @@ function updateTimerDisplay(seconds) {
     const m = String(Math.floor(seconds / 60)).padStart(2, "0");
     const s = String(seconds % 60).padStart(2, "0");
     document.getElementById("timer").textContent = `${m}:${s}`;
+}
+
+// 이미지 교체 함수
+function updateProgressImage(elapsed, total) {
+    if (!progressImage) return;
+    const percent = (elapsed / total) * 100;
+    const index = Math.min(7, Math.floor(percent / 12.5));
+    progressImage.src = `/static/images/image${index + 1}.png`;
 }
 
 // 설정 화면 숨기기 함수
@@ -207,4 +187,3 @@ function submitFeedback() {
         document.getElementById("feedback").classList.add("hidden");
     });
 }
-

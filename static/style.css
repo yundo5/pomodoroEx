@@ -3,31 +3,25 @@ body {
     text-align: center;
     margin: 40px;
 }
+
 .section {
     margin: 15px 0;
 }
+
 .hidden {
     display: none;
 }
+
 table {
     margin: 0 auto;
     border-collapse: collapse;
 }
+
 th, td {
     padding: 8px;
     border: 1px solid #aaa;
 }
-#bgVideo {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 80vw;
-    height: 80vh;
-    transform: translate(-50%, -50%);
-    object-fit: cover;
-    z-index: -1;
-    border-radius: 10px;
-}
+
 .music-option {
     margin: 5px;
     padding: 10px;
@@ -36,6 +30,16 @@ th, td {
     border: none;
     border-radius: 5px;
 }
+
 .music-option:hover {
     background-color: #e0e0e0;
+}
+#progressImage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -1;
 }
