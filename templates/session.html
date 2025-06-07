@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Pomodoro 세션 설정</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-session">
+    <div class="session-container">
+        <form method="post" action="/start">
+            <div class="form-section">
+                <label for="task">1. 이번 뽀모도로 세션에서 집중할 핵심 작업은 무엇인가요?</label>
+                <textarea name="task" id="task" rows="2" required></textarea>
+
+                <label for="goal">2. 이 작업이 완료 되었을 때 어떤 결과물을 원하나요?</label>
+                <textarea name="goal" id="goal" rows="2" required></textarea>
+
+                <label>3. 예상되는 집중 시간(뽀모도로 단위)을 적어보세요</label><br>
+
+                <!-- 집중 시간 선택 (5~55분) -->
+                <select name="workMinutes" required>
+                    {% for i in range(5, 60, 5) %}
+                    <option value="{{ i }}">{{ i }}분</option>
+                    {% endfor %}
+                </select>
+
+                <!-- 휴식 시간 선택 (5~10분) -->
+                <select name="breakMinutes" required>
+                    {% for i in range(5, 11) %}
+                    <option value="{{ i }}">{{ i }}분</option>
+                    {% endfor %}
+                </select>
+
+                <!-- 반복 횟수 선택 (1~5회) -->
+                <select name="repeatCount" required>
+                    {% for i in range(1, 6) %}
+                    <option value="{{ i }}">{{ i }}회</option>
+                    {% endfor %}
+                </select>
+
+                <!-- 배경 음악 선택 -->
+                <label for="bgmSelect">배경 음악 선택:</label>
+                <select name="bgm" id="bgmSelect">
+                    <option value="rain.mp3">Rain</option>
+                    <option value="ocean.mp3">Ocean</option>
+                    <option value="heater.mp3">Heater</option>
+                </select>
+            </div>
+
+            <button type="submit" class="start-button">START</button>
+        </form>
+    </div>
+</body>
+</html>

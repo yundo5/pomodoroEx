@@ -1,52 +1,43 @@
-from flask import Flask, render_template, request
-from modules.recorder import load_records
-from modules.feedback import summarize_feedback, calculate_total_focus_time
+# app.py
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+from datetime import datetime
+import os
+from modules import recorder, feedback
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template('index.html')
 
-@app.route("/save_record", methods=["POST"])
-def save_record():
-    data = request.get_json()
-    with open("record.txt", "a", encoding="utf-8") as f:
-        f.write(
-            f"[{data['timestamp']}]\n"
-            f"Focus Level: {data['focus']}\n"
-            f"Work Flow: {data['flow']}\n"
-            f"Task Type: {data['task']}\n"
-            f"{'-'*30}\n"
-        )
-    return {"status": "saved"}
+@app.route('/session')
+def session_setup():
+    return render_template('session.html')
 
-@app.route("/submit_feedback", methods=["POST"])
+@app.route('/start', methods=['POST'])
+def start_session():
+    data = request.form.to_dict()
+    recorder.save_task(data)
+    return render_template('timer.html', session=data)
+
+@app.route('/feedback')
+def feedback_page():
+    return render_template('feedback.html')
+
+@app.route('/submit_feedback', methods=['POST'])
 def submit_feedback():
-    data = request.get_json()
-    with open("record.txt", "a", encoding="utf-8") as f:
-        f.write(
-            f"[{data['timestamp']}]\n"
-            f"Focus Level: {data['focus']}\n"
-            f"Work Flow: {data['flow']}\n"
-            f"Task Type: {data['task']}\n"
-            f"Focus Duration Feedback: {data['focusFeedback']}\n"
-            f"Break Duration Feedback: {data['breakFeedback']}\n"
-            f"{'-'*30}\n"
-        )
-    return {"status": "feedback_saved"}
+    data = request.form.to_dict()
+    recorder.save_feedback(data)
+    return redirect(url_for('index'))
 
-@app.route("/stats")
+@app.route('/stats')
 def stats():
-    try:
-        records = load_records()
-        summary = summarize_feedback(records)
-        total_time = calculate_total_focus_time(records)
-    except Exception as e:
-        summary = {}
-        total_time = 0
-        print(f"[ERROR] stats page failed: {e}")
-    return render_template("stats.html", summary=summary, total_time=total_time)
-
-if __name__ == "__main__":
+    # 예시 데이터: 딕셔너리 형태로 제공
+    stats_data = {
+        "focus": 5,
+        "flow": 3,
+        "task": 2
+    }
+    return render_template("stats.html", stats=stats_data)
+if __name__ == '__main__':
     app.run(debug=True)

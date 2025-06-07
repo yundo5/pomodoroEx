@@ -1,45 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Feedback Stats</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Pomodoro 통계</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Pomodoro Feedback Statistics</h1>
-    <p><a href="/">← Back to Timer</a></p>
-    <h3>Total Focus Time: {{ total_time }} minutes</h3>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Focus Level</th>
-                <th>Work Flow</th>
-                <th>Task Type</th>
-                <th>Focus Feedback</th>
-                <th>Break Feedback</th>
-                <th>Total Sessions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for key, value in summary.items() %}
-            <tr>
-                <td>{{ key[0] }}</td>
-                <td>{{ key[1] }}</td>
-                <td>{{ key[2] }}</td>
-                <td>
-                    {% for fb, count in value.focus_feedback.items() %}
-                        {{ fb }}: {{ count }}<br>
-                    {% endfor %}
-                </td>
-                <td>
-                    {% for fb, count in value.break_feedback.items() %}
-                        {{ fb }}: {{ count }}<br>
-                    {% endfor %}
-                </td>
-                <td>{{ value.focus_sessions }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <h1>Pomodoro 집중 통계</h1>
+    <canvas id="myChart" width="400" height="200"></canvas>
+
+    <script>
+        // Flask에서 전달받은 stats 데이터를 JSON으로 변환
+        
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(statsData),
+                datasets: [{
+                    label: '횟수',
+                    data: Object.values(statsData),
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        precision: 0
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>

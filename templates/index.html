@@ -2,89 +2,114 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Pomodoro 웹</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Pomodoro 시작</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* 배경: 땅-나무7 이미지 */
+        body.bg-start {
+            background-image: url("{{ url_for('static', filename='images/나무/땅/땅-나무7.png') }}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 중앙 시작 버튼 컨테이너 */
+        .start-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* 시작 버튼: 흰색 배경, 검정 테두리 */
+        .start-button {
+            width: 100px;
+            height: 40px;
+            background-color: white;
+            color: black;
+            font-size: 16px;
+            border: 2px solid black;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* 사이드 버튼 (통계/설정): 원형, 흰색 배경 + 검정 테두리 */
+        .side-icons {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .icon-button {
+            width: 47px;
+            height: 47px;
+            border-radius: 50%;
+            background-color: white;
+            border: 2px solid black;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .settings-canvas {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 20px;
+            z-index: 3;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
-<body>
-    <img id="progressImage" src="/static/images/image1.png" alt="진행 이미지">
-
-    <h1 style="color: white; text-shadow: 1px 1px 4px black;">Pomodoro 타이머</h1>
-
-    <div id="settings" class="card">
-        <div class="section">
-            <a href="/stats"><button>통계 보기</button></a>
-        </div>
-
-        <div class="section">
-            <label>작업 시간 (분): <input type="number" id="workMinutes" value="25"></label>
-            <label>휴식 시간 (분): <input type="number" id="breakMinutes" value="5"></label>
-            <label>반복 횟수 (1~5): <input type="number" id="repeatCount" value="1" min="1" max="5"></label>
-        </div>
-
-        <div class="section">
-            <strong>집중도:</strong><br>
-            <label><input type="radio" name="focus" value="High"> 높음</label>
-            <label><input type="radio" name="focus" value="Medium" checked> 중간</label>
-            <label><input type="radio" name="focus" value="Low"> 낮음</label>
-        </div>
-
-        <div class="section">
-            <strong>작업 흐름:</strong><br>
-            <label><input type="radio" name="flow" value="Fast" checked> 빠름</label>
-            <label><input type="radio" name="flow" value="Relaxed"> 여유롭게</label>
-            <label><input type="radio" name="flow" value="Find Rhythm"> 리듬 찾기</label>
-        </div>
-
-        <div class="section">
-            <strong>작업 유형:</strong><br>
-            <label><input type="radio" name="task" value="Writing" checked> 글쓰기</label>
-            <label><input type="radio" name="task" value="Repetitive Task"> 반복 작업</label>
-            <label><input type="radio" name="task" value="Creative Thinking"> 창의적 사고</label>
-        </div>
-
-        <div class="section">
-            <label><input type="checkbox" id="alarmToggle" checked> 알람 소리 활성화</label>
-        </div>
-
-        <div class="section">
-            <strong>배경 음악 선택:</strong><br>
-            <button id="musicOcean">Ocean</button>
-            <button id="musicHeater">Heater</button>
-            <button id="musicRain">Rain</button>
-        </div>
+<body class="bg-start">
+    <!-- 중앙 시작 버튼 -->
+    <div class="start-container">
+        <button onclick="location.href='/session'" class="start-button">Start</button>
     </div>
 
-    <div class="card centered">
-        <h2 id="timer">25:00</h2>
-        <button onclick="startPomodoro()">시작</button>
-        <button onclick="pausePomodoro()" id="pauseBtn" class="hidden">일시정지</button>
-        <button onclick="stopPomodoro()" id="stopBtn" class="hidden">중지</button>
+    <!-- 오른쪽 하단 원형 버튼 -->
+    <div class="side-icons">
+        <button onclick="location.href='/stats'" class="icon-button">통계</button>
+        <button onclick="toggleSettings()" class="icon-button">설정</button>
     </div>
 
-    <div id="feedback" class="card hidden">
-        <h3>세션 피드백</h3>
-        <div>
-            <p>집중 시간은 적절했나요?</p>
-            <label><input type="radio" name="focusFeedback" value="매우 부족함"> 매우 부족함</label><br>
-            <label><input type="radio" name="focusFeedback" value="조금 부족함"> 조금 부족함</label><br>
-            <label><input type="radio" name="focusFeedback" value="적절함" checked> 적절함</label><br>
-            <label><input type="radio" name="focusFeedback" value="조금 많음"> 조금 많음</label><br>
-            <label><input type="radio" name="focusFeedback" value="매우 많음"> 매우 많음</label>
-        </div>
-        <div>
-            <p>휴식 시간은 적절했나요?</p>
-            <label><input type="radio" name="breakFeedback" value="매우 부족함"> 매우 부족함</label><br>
-            <label><input type="radio" name="breakFeedback" value="조금 부족함"> 조금 부족함</label><br>
-            <label><input type="radio" name="breakFeedback" value="적절함" checked> 적절함</label><br>
-            <label><input type="radio" name="breakFeedback" value="조금 많음"> 조금 많음</label><br>
-            <label><input type="radio" name="breakFeedback" value="매우 많음"> 매우 많음</label>
-        </div>
-        <button onclick="submitFeedback()">피드백 제출</button>
+    <!-- 설정 패널 -->
+    <div id="settings-canvas" class="settings-canvas hidden">
+        <h3>설정</h3>
+        <label>
+            <input type="checkbox" id="alarmToggle" checked>
+            알람 소리 켜기
+        </label>
+        <br><br>
+        <label for="volumeRange">배경음악 볼륨</label><br>
+        <input type="range" id="volumeRange" min="0" max="100" value="50">
+        <br><br>
+        <button onclick="toggleSettings()">닫기</button>
     </div>
 
-    <audio id="alarmSound" src="/static/alarm.mp3" preload="auto"></audio>
-    <audio id="bgMusic" preload="auto" loop></audio>
+    <!-- JavaScript -->
+    <script>
+        function toggleSettings() {
+            const canvas = document.getElementById("settings-canvas");
+            canvas.classList.toggle("hidden");
+        }
 
-    <script src="/static/script.js"></script>
+        document.getElementById("volumeRange").addEventListener("input", function() {
+            const bgm = document.getElementById("bgMusic");
+            if (bgm) {
+                bgm.volume = this.value / 100;
+            }
+        });
+    </script>
 </body>
 </html>

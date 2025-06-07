@@ -10,13 +10,15 @@ document.addEventListener("DOMContentLoaded", () => {
     bgMusic.loop = true;
     let selectedMusic = "";
 
-    // ✅ 음악 버튼 존재 시에만 이벤트 바인딩 (안전)
     const musicOceanBtn = document.getElementById("musicOcean");
     if (musicOceanBtn) musicOceanBtn.addEventListener("click", () => selectMusic("ocean.mp3"));
     const musicHeaterBtn = document.getElementById("musicHeater");
     if (musicHeaterBtn) musicHeaterBtn.addEventListener("click", () => selectMusic("heater.mp3"));
     const musicRainBtn = document.getElementById("musicRain");
     if (musicRainBtn) musicRainBtn.addEventListener("click", () => selectMusic("rain.mp3"));
+
+    const testBtn = document.getElementById("testSessionBtn");
+    if (testBtn) testBtn.addEventListener("click", startTestSession);
 
     function getRadioValue(name) {
         const radios = document.getElementsByName(name);
@@ -44,7 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedMusic = musicFile;
     }
 
-    // ✅ 전역 함수 등록
     window.startPomodoro = function () {
         const workMinutes = parseInt(document.getElementById("workMinutes").value) || 25;
         const breakMinutes = parseInt(document.getElementById("breakMinutes").value) || 5;
@@ -96,6 +97,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
         runTimer(durations.work);
         playBackgroundMusic();
+    }
+
+    function startTestSession() {
+        const durations = {
+            work: 8,
+            break: 8
+        };
+        totalRepeats = 3;
+        isWork = true;
+        currentRepeat = 0;
+
+        hideSettings();
+        runTestTimer(durations.work, durations.break);
+        playBackgroundMusic();
+    }
+
+    function runTestTimer(workDuration, breakDuration) {
+        let duration = isWork ? workDuration : breakDuration;
+        let timeLeft = duration;
+        updateTimerDisplay(timeLeft);
+        updateProgressImage(0, duration);
+
+        clearInterval(interval);
+        interval = setInterval(() => {
+            if (!isPaused) {
+                timeLeft--;
+                updateTimerDisplay(timeLeft);
+                updateProgressImage(duration - timeLeft, duration);
+
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    if (isWork && document.getElementById("alarmToggle").checked) {
+                        document.getElementById("alarmSound").play();
+                    }
+
+                    if (!isWork) currentRepeat++;
+                    if (currentRepeat < totalRepeats) {
+                        isWork = !isWork;
+                        runTestTimer(workDuration, breakDuration);
+                    } else {
+                        stopBackgroundMusic();
+                        document.getElementById("feedback").classList.remove("hidden");
+                    }
+                }
+            }
+        }, 1000);
     }
 
     window.pausePomodoro = function () {

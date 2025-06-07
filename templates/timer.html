@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Pomodoro 타이머</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-timer">
+    <div class="timer-container">
+        <img id="backgroundImage" src="{{ url_for('static', filename='images/나무/땅-나무1.png') }}" class="background" alt="배경">
+
+        <div class="quote-box">
+            <p id="quoteText">“참으로 위대한 일은 언제나 서서히 이루어지고 눈에 보이지 않게 성장해 가는 법이다.”</p>
+        </div>
+
+        <div class="timer-display" id="timerDisplay">25:00</div>
+
+        <div class="button-row">
+            <button id="resetBtn">RESET</button>
+            <button id="stopBtn">STOP</button>
+        </div>
+
+        <!-- 배경음악 경로 수정 -->
+        <audio id="bgMusic" loop autoplay hidden>
+            <source src="{{ url_for('static', filename='music/' + session.get('bgm', 'Rain.mp3')) }}" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script>
+        let workMinutes = parseInt("{{ session.get('workMinutes', 25) }}");
+        let breakMinutes = parseInt("{{ session.get('breakMinutes', 5) }}");
+        let repeatCount = parseInt("{{ session.get('repeatCount', 1) }}");
+        let currentCycle = 0;
+        let isWork = true;
+        let timer;
+        let seconds = workMinutes * 60;
+
+        const timerDisplay = document.getElementById("timerDisplay");
+        const backgroundImage = document.getElementById("backgroundImage");
+
+        function updateTimer() {
+            let min = String(Math.floor(seconds / 60)).padStart(2, '0');
+            let sec = String(seconds % 60).padStart(2, '0');
+            timerDisplay.textContent = `${min}:${sec}`;
+        }
+
+        function changeBackground(cycle, isWorkPhase) {
+            const stageNames = ["땅", "산", "하늘", "성층권", "우주"];
+            const stage = stageNames[Math.min(cycle, 4)];
+            if (isWorkPhase) {
+                const treeNum = Math.min(Math.floor((workMinutes * 60 - seconds) / ((workMinutes * 60) / 9)) + 1, 9);
+                backgroundImage.src = `/static/images/나무/${stage}-나무${treeNum}.png`;
+            } else {
+                backgroundImage.src = `/static/images/나무/${stage}-휴식시간.png`;
+            }
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                seconds--;
+                updateTimer();
+                changeBackground(currentCycle, isWork);
+
+                if (seconds <= 0) {
+                    clearInterval(timer);
+
+                    if (isWork) {
+                        isWork = false;
+                        seconds = breakMinutes * 60;
+                        startTimer();
+                    } else {
+                        currentCycle++;
+                        if (currentCycle < repeatCount) {
+                            isWork = true;
+                            seconds = workMinutes * 60;
+                            startTimer();
+                        } else {
+                            window.location.href = "/feedback";
+                        }
+                    }
+                }
+            }, 1000);
+        }
+
+        document.getElementById("resetBtn").onclick = () => {
+            clearInterval(timer);
+            isWork = true;
+            currentCycle = 0;
+            seconds = workMinutes * 60;
+            updateTimer();
+            changeBackground(0, true);
+            startTimer();
+        };
+
+        document.getElementById("stopBtn").onclick = () => {
+            clearInterval(timer);
+            window.location.href = "/";
+        };
+
+        updateTimer();
+        startTimer();
+    </script>
+</body>
+</html>

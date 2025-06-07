@@ -19,3 +19,7 @@ Task Type: Repetitive Task
 Focus Duration Feedback: Very insufficient
 Break Duration Feedback: Very insufficient
 ------------------------------
+[2025-06-07 23:27:38]
+작업: 시험공부
+목표: 21년도 기출문제 전부 풀기
+예상 시간: 20분 5분 1회

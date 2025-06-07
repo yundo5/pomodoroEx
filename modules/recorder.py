@@ -1,44 +1,37 @@
+# modules/recorder.py
 import os
-import chardet
-from typing import List, Dict
+from datetime import datetime
 
 RECORD_FILE = "record.txt"
 
-def detect_encoding(filepath):
-    with open(filepath, 'rb') as f:
-        return chardet.detect(f.read())['encoding']
+def save_task(data):
+    """사용자가 세션 시작 전에 입력한 작업 정보를 저장"""
+    task = data.get('task', '').strip()
+    goal = data.get('goal', '').strip()
+    work = data.get('workMinutes', '')
+    rest = data.get('breakMinutes', '')
+    repeat = data.get('repeatCount', '')
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-def load_records() -> List[Dict]:
-    records = []
-    if not os.path.exists(RECORD_FILE):
-        print("[DEBUG] record.txt does not exist.")
-        return records
+    with open(RECORD_FILE, 'a', encoding='utf-8') as f:
+        f.write(f"[{timestamp}]\n")
+        f.write(f"작업: {task}\n")
+        f.write(f"목표: {goal}\n")
+        f.write(f"예상 시간: {work}분 {rest}분 {repeat}회\n")
 
-    encoding = detect_encoding(RECORD_FILE)
-    print(f"[DEBUG] Detected encoding: {encoding}")
+def save_feedback(data):
+    """세션 종료 후 사용자 자기평가 내용을 저장"""
+    progress = data.get("progress", "")
+    goal_achieve = data.get("goal_achieve", "")
+    time_eval = data.get("time_eval", "")
+    focus = data.get("focus", "")
+    comment = data.get("comment", "").strip()
 
-    with open(RECORD_FILE, encoding=encoding) as f:
-        lines = [line.strip() for line in f if line.strip()]
-
-    print(f"[DEBUG] Read {len(lines)} lines from file.")
-
-    record = {}
-    for line in lines:
-        print(f"[DEBUG] Processing line: {line}")
-        if line.startswith("[") and line.endswith("]"):
-            record = {"timestamp": line[1:-1]}
-        elif line.startswith("Focus Level"):
-            record["focus"] = line.split(": ", 1)[1]
-        elif line.startswith("Work Flow"):
-            record["flow"] = line.split(": ", 1)[1]
-        elif line.startswith("Task Type"):
-            record["task"] = line.split(": ", 1)[1]
-        elif line.startswith("Focus Duration Feedback"):
-            record["focus_feedback"] = line.split(": ", 1)[1]
-        elif line.startswith("Break Duration Feedback"):
-            record["break_feedback"] = line.split(": ", 1)[1]
-        elif line.startswith("-") and record:
-            records.append(record)
-            record = {}
-    print(f"[DEBUG] Parsed {len(records)} records.")
-    return records
+    with open(RECORD_FILE, 'a', encoding='utf-8') as f:
+        f.write(f"\n작업진행: {progress}\n")
+        f.write(f"목표달성: {goal_achieve}\n")
+        f.write(f"시간사용: {time_eval}\n")
+        f.write(f"집중도: {focus}\n")
+        if comment:
+            f.write(f"기타의견: {comment}\n")
+        f.write("-" * 30 + "\n")
