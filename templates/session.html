@@ -7,10 +7,34 @@
 </head>
 <body class="bg-session">
 
-    <div class="session-wrapper">
-        <!-- 왼쪽 설정 박스 -->
-        <div class="left-box">
-            <form method="post" action="/start" class="settings-form">
+    {% if bgm != 'off' %}
+    <audio id="bgmPlayer" autoplay loop>
+        <source src="{{ url_for('static', filename='bgm/' + bgm) }}" type="audio/mpeg">
+    </audio>
+    {% endif %}
+
+    <form method="post" action="/start">
+        <div class="session-wrapper">
+            <!-- 왼쪽 질문 영역 -->
+            <div class="left-box">
+                <div class="form-group">
+                    <label for="task">1. 이번 뽀모도로 세션에서 집중할 핵심 작업은 무엇인가요?</label>
+                    <textarea name="task" id="task" rows="2" required>{{ task or '' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="goal">2. 이 작업이 완료 되었을 때 어떤 결과물을 원하나요?</label>
+                    <textarea name="goal" id="goal" rows="2" required>{{ goal or '' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="focusUnits">3. 예상되는 집중 시간(뽀모도로 단위)을 적어보세요</label>
+                    <input type="number" name="focusUnits" id="focusUnits" min="1" max="10" required>
+                </div>
+            </div>
+
+            <!-- 오른쪽 설정 영역 -->
+            <div class="right-box">
                 <div class="form-group">
                     <label for="workMinutes">집중 시간</label>
                     <select name="workMinutes" id="workMinutes" required>
@@ -47,28 +71,13 @@
                         <option value="heater.mp3" {% if bgm == 'heater.mp3' %}selected{% endif %}>Heater</option>
                     </select>
                 </div>
-        </div> <!-- 왼쪽 박스 닫기 -->
-
-        <!-- 오른쪽 질문 박스 -->
-        <div class="right-box">
-                <div class="form-group">
-                    <label for="task">1. 이번 뽀모도로 세션에서 집중할 핵심 작업은 무엇인가요?</label>
-                    <textarea name="task" id="task" rows="2" required>{{ task or '' }}</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="goal">2. 이 작업이 완료 되었을 때 어떤 결과물을 원하나요?</label>
-                    <textarea name="goal" id="goal" rows="2" required>{{ goal or '' }}</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>3. 예상되는 집중 시간(뽀모도로 단위)을 적어보세요</label>
-                    <input type="number" name="focusUnits" min="1" max="10" required>
-                </div>
-
-                <button type="submit" class="start-button">START</button>
-            </form> <!-- form 종료는 여기 -->
+            </div>
         </div>
-    </div>
+
+        <!-- 버튼 영역 -->
+        <div class="start-button-wrapper">
+            <button type="submit" class="start-button">START</button>
+        </div>
+    </form>
 </body>
 </html>
