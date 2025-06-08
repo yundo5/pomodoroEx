@@ -4,11 +4,35 @@
     <meta charset="UTF-8">
     <title>포모도로 자기 평가</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .disabled-section {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .checkbox-group {
+            margin: 20px 0;
+        }
+        .checkbox-group hr {
+         margin-top: 10px;
+         margin-bottom: 20px;
+         border: none;
+         border-top: 2px dashed #888; /* 더 두껍고 점선으로 강조 */
+}
+    </style>
 </head>
 <body class="bg-feedback">
     <div class="feedback-container">
         <form method="post" action="/submit_feedback">
             <h2>✨ 오늘의 포모도로 세션 돌아보기 ✨</h2>
+
+            <!-- 저장 여부 선택 -->
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" id="saveToggle" name="saveStats">
+                    이 통계를 남길까요?
+                </label>
+                <hr>
+            </div>
 
             <!-- 1. 계획 다시 확인 -->
             <div class="feedback-section">
@@ -18,8 +42,8 @@
                 <p>나의 예상: {{ session.get('workMinutes') }}분 {{ session.get('breakMinutes') }}분 {{ session.get('repeatCount') }}회</p>
             </div>
 
-            <!-- 2. 체크박스 평가 -->
-            <div class="feedback-section">
+            <!-- 2. 평가 항목 -->
+            <div class="feedback-section" id="evaluationSection">
                 <p><strong>2. 이번 세션은 어땠나요? 체크박스로 간단히 평가해주세요!</strong></p>
 
                 <p>✅ 작업 진행 상태:</p>
@@ -48,7 +72,7 @@
             </div>
 
             <!-- 3. 자유 응답 -->
-            <div class="feedback-section">
+            <div class="feedback-section" id="commentSection">
                 <p><strong>3. 이번 세션에 대한 생각이나 다음 계획을 자유롭게 남겨주세요! (선택 사항)</strong></p>
                 <textarea name="comment" rows="4" placeholder="예: 내일은 복습 위주로 다시 해볼 예정입니다."></textarea>
             </div>
@@ -56,11 +80,32 @@
             <!-- 버튼 -->
             <div class="button-row">
                 <button type="submit" class="start-button">처음으로</button>
-                <button type="button" class="icon-button" onclick="location.href='/stats'">
-                    <img src="{{ url_for('static', filename='icons/stats.png') }}" alt="통계보기">
-                </button>
+                <button type="button" class="start-button" onclick="location.href='/stats'">통계보기</button>
             </div>
         </form>
     </div>
+
+    <script>
+    const toggle = document.getElementById("saveToggle");
+    const evalSection = document.getElementById("evaluationSection");
+    const commentSection = document.getElementById("commentSection");
+
+    function toggleSections() {
+        const disabled = toggle.checked; // 체크했을 때 비활성화됨
+        [evalSection, commentSection].forEach(section => {
+            if (disabled) {
+                section.classList.add("disabled-section");
+            } else {
+                section.classList.remove("disabled-section");
+            }
+
+            const inputs = section.querySelectorAll("input, textarea, select");
+            inputs.forEach(el => el.disabled = disabled);
+        });
+    }
+
+    toggle.addEventListener("change", toggleSections);
+    document.addEventListener("DOMContentLoaded", toggleSections);
+</script>
 </body>
 </html>

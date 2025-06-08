@@ -1,111 +1,213 @@
+/* ===== 공통 초기화 ===== */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+/* ===== 세션 설정 화면 (session.html) ===== */
 body.bg-session {
-    font-family: sans-serif;
-    background-image: url('/static/index-background.jpg');
-    background-size: cover;
-    background-position: center;
-    background-color: #ffffff;
-    color: #333;
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  background-image: url('/static/index-background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-color: #ffffff;
+  color: #333;
+  min-height: 100vh;
+  overflow-y: auto;
 }
 
 .session-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 50px;
-    padding: 40px;
-    max-width: 1000px;
-    margin: 50px auto;
-    background-color: #fdfdfd;
-    border-radius: 12px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 50px;
+  padding: 40px;
+  max-width: 1000px;
+  margin: 50px auto;
+  background-color: #fdfdfd;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.left-box, .right-box {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 300px;
+  flex: 1;
 }
 
 .left-box {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    min-width: 300px;
-    flex: 1;
-    background-color: #a0522d;
-    padding: 30px 20px;
-    color: white;
-    box-sizing: border-box;
+  background-color: #a0522d;
+  padding: 30px 20px;
+  color: white;
+  box-sizing: border-box;
 }
 
 .right-box {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    min-width: 300px;
-    flex: 1;
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 40px;
-    border-radius: 0 20px 20px 0;
-    box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 0 20px 20px 0;
+  box-sizing: border-box;
 }
 
 .settings-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .form-group {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-group label {
-    margin-bottom: 5px;
-    font-weight: bold;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 
 textarea, input, select {
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 6px;
-    border: 1px solid #aaa;
-    resize: none;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+  resize: none;
 }
 
-/* 체크박스 전용 스타일 */
 .form-group input[type="checkbox"] {
-    transform: scale(1.2);
-    margin-right: 8px;
-    cursor: pointer;
+  transform: scale(1.2);
+  margin-right: 8px;
+  cursor: pointer;
 }
 
 .form-group.checkbox-group {
-    flex-direction: row;
-    align-items: center;
-    font-weight: bold;
-    gap: 10px;
+  flex-direction: row;
+  align-items: center;
+  font-weight: bold;
+  gap: 10px;
 }
 
-/* 버튼 정렬 */
 .start-button-wrapper {
-    width: 100%;
-    text-align: center;
-    margin-top: 30px;
+  width: 100%;
+  text-align: center;
+  margin-top: 30px;
 }
 
 .start-button {
-    padding: 15px 80px;
-    font-size: 20px;
-    border: none;
-    border-radius: 30px;
-    background-color: #a14116;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  padding: 15px 80px;
+  font-size: 20px;
+  border: none;
+  border-radius: 30px;
+  background-color: #a14116;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .start-button:hover {
-    background-color: #7d2f0f;
+  background-color: #7d2f0f;
+}
+
+/* ===== 타이머 화면 (timer.html) ===== */
+body.timer-page {
+  height: 100vh;
+  overflow: hidden;
+  color: white;
+}
+
+.wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* ✅ 스크롤 허용 */
+}
+
+#main-body {
+  flex: 1 0 auto; /* ✅ 높이 자동 */
+  background-image: url('/static/images/your-background.jpg');
+  background-size: cover;
+  background-position: center; /* ✅ 상단까지 보이도록 center */
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: background-image 0.2s linear, background-color 0.3s ease;
+}
+
+#timerDisplay {
+  font-size: 4rem;
+  margin-bottom: 30px;
+  font-weight: bold;
+  text-shadow: 2px 2px 8px black;
+}
+
+.bottom-options {
+  height: 100px; /* ✅ 고정 높이 */
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 20px;
+  color: black;
+  flex-shrink: 0; /* ✅ 줄어들지 않도록 고정 */
+}
+
+#backButton {
+  background-color: skyblue;
+  color: black;
+  border: 2px solid black;
+  border-radius: 20px;
+  padding: 10px 25px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#volumeRange {
+  width: 200px;
+  height: 8px;
+  background: #ddd;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.flat-button {
+  padding: 10px 40px;
+  border-radius: 12px;
+  font-size: 1rem;
+  border: 2px solid black;
+  cursor: pointer;
+}
+
+.pause-button {
+  background-color: skyblue;
+  color: black;
+}
+
+.stop-button {
+  background-color: red;
+  color: white;
 }
