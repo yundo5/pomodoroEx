@@ -1,168 +1,229 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>Pomodoro 타이머</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: sans-serif;
-            color: white;
-            transition: background-image 0.2s linear;
-        }
+  <meta charset="UTF-8" />
+  <title>Pomodoro 타이머</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: sans-serif;
+      color: white;
+      transition: background-image 0.2s linear, background-color 0.3s ease;
+    }
 
-        #timerDisplay {
-            font-size: 4rem;
-            margin-bottom: 30px;
-            font-weight: bold;
-            text-shadow: 2px 2px 8px black;
-        }
+    #timerDisplay {
+      font-size: 4rem;
+      margin-bottom: 30px;
+      font-weight: bold;
+      text-shadow: 2px 2px 8px black;
+    }
 
-        .controls {
-            position: absolute;
-            top: calc(50% + 75px);
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 100px;
-            box-sizing: border-box;
-        }
+    .controls {
+      position: absolute;
+      top: calc(50% + 75px);
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 100px;
+      box-sizing: border-box;
+    }
 
-        .button {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 2px solid black;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
+    .button {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid black;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
 
-        .pause-button {
-            background-color: skyblue;
-            color: black;
-        }
+    .pause-button {
+      background-color: skyblue;
+      color: black;
+    }
 
-        .stop-button {
-            background-color: red;
-            color: white;
-        }
-    </style>
+    .stop-button {
+      background-color: red;
+      color: white;
+    }
+
+    .top-controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 1rem;
+    }
+  </style>
 </head>
-<body>
+<body id="main-body">
+  <!-- 배경 애니메이션 토글 -->
+  <div class="top-controls">
+    <label>
+      <input type="checkbox" id="bgToggle" />
+      배경 애니메이션 OFF
+    </label>
+  </div>
 
-    <div id="timerDisplay">준비 중...</div>
+  <!-- 타이머 표시 -->
+  <div id="timerDisplay">준비 중...</div>
 
-    <div class="controls">
-        <button id="pauseBtn" class="button pause-button" onclick="togglePause()">⏸</button>
-        <button class="button stop-button" onclick="stopTimer()">⏹</button>
-    </div>
+  <!-- 컨트롤 버튼 -->
+  <div class="controls">
+    <button id="pauseBtn" class="button pause-button" onclick="togglePause()">⏸</button>
+    <button class="button stop-button" onclick="stopTimer()">⏹</button>
+  </div>
 
-    <script>
-        const workMinutes = parseInt("{{ session['workMinutes'] }}");
-        const breakMinutes = parseInt("{{ session['breakMinutes'] }}");
-        const totalImages = 12;
-        const themes = ["땅", "산", "하늘", "성층권", "우주"];
+  <!-- BGM 오디오 -->
+  <audio id="bgMusic" loop></audio>
 
-        let currentThemeIndex = 0;
-        let currentTheme = themes[currentThemeIndex];
-        let seconds = workMinutes * 60;
-        let isPaused = false;
-        let isBreak = false;
-        let interval;
-        let bgIndex = 1;
+  <!-- Flask에서 BGM 값 전달 -->
+  <script>
+    const selectedMusic = "{{ session.get('bgm', 'off') }}";
+    const workMinutes = parseInt("{{ session['workMinutes'] }}");
+    const breakMinutes = parseInt("{{ session['breakMinutes'] }}");
+  </script>
 
-        const display = document.getElementById("timerDisplay");
-        const pauseBtn = document.getElementById("pauseBtn");
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      let isWork = true;
+      let interval;
+      let seconds = workMinutes * 60;
+      let isPaused = false;
+      let isBreak = false;
+      let bgIndex = 1;
+      let currentThemeIndex = 0;
+      const totalImages = 12;
+      const themes = ["땅", "산", "하늘", "성층권", "우주"];
+      let currentTheme = themes[currentThemeIndex];
+      let backgroundAnimationOff = false;
 
-        function updateDisplay() {
-            let m = Math.floor(seconds / 60);
-            let s = seconds % 60;
-            display.textContent = `${m}분 ${s < 10 ? '0' + s : s}초`;
-        }
+      const display = document.getElementById("timerDisplay");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const body = document.getElementById("main-body");
+      const bgToggle = document.getElementById("bgToggle");
+      const bgMusic = document.getElementById("bgMusic");
 
-        function preloadAndSetBackground(src) {
-            const img = new Image();
-            img.onload = () => {
-                document.body.style.backgroundImage = `url('${src}')`;
-            };
-            img.src = src;
-        }
+      bgToggle.addEventListener("change", () => {
+        backgroundAnimationOff = bgToggle.checked;
+        applyBackground();
+      });
 
-        function changeBackground() {
-            if (isPaused || isBreak) {
-                preloadAndSetBackground(`/static/images/나무/${currentTheme}/${currentTheme}-휴식시간.png`);
-                return;
-            }
+      function updateDisplay() {
+        let m = Math.floor(seconds / 60);
+        let s = seconds % 60;
+        display.textContent = `${m}분 ${s < 10 ? "0" + s : s}초`;
+      }
 
-            const imgPath = `/static/images/나무/${currentTheme}/${currentTheme}-나무${bgIndex}.png`;
-            preloadAndSetBackground(imgPath);
-
-            bgIndex++;
-            if (bgIndex > totalImages) {
-                bgIndex = 1;
-                currentThemeIndex++;
-                if (currentThemeIndex >= themes.length) {
-                    currentThemeIndex = 0;
-                }
-                currentTheme = themes[currentThemeIndex];
-            }
-        }
-
-        function startBackgroundRotation() {
-            changeBackground();
-            setInterval(() => {
-                if (!isPaused) {
-                    changeBackground();
-                }
-            }, 3000);
-        }
-
-        function startTimer() {
-            updateDisplay();
-            interval = setInterval(() => {
-                if (!isPaused) {
-                    if (seconds > 0) {
-                        seconds--;
-                        updateDisplay();
-                    } else {
-                        if (!isBreak) {
-                            isBreak = true;
-                            seconds = breakMinutes * 60;
-                            changeBackground();
-                            updateDisplay();
-                        } else {
-                            clearInterval(interval);
-                            window.location.href = "/feedback";
-                        }
-                    }
-                }
-            }, 1000);
-        }
-
-        function togglePause() {
-            isPaused = !isPaused;
-            pauseBtn.textContent = isPaused ? "▶" : "⏸";
-            changeBackground();
-        }
-
-        function stopTimer() {
-            clearInterval(interval);
-            window.location.href = "/";
-        }
-
-        window.onload = () => {
-            startBackgroundRotation();
-            startTimer();
+      function preloadAndSetBackground(src) {
+        const img = new Image();
+        img.onload = () => {
+          body.style.backgroundImage = `url('${src}')`;
+          body.style.backgroundColor = "";
         };
-    </script>
+        img.src = src;
+      }
+
+      function applyBackground() {
+        if (backgroundAnimationOff) {
+          body.style.backgroundImage = "none";
+          body.style.backgroundColor = !isPaused && !isBreak ? "green" : "darkred";
+        } else {
+          changeBackground();
+        }
+      }
+
+      function changeBackground() {
+        if (backgroundAnimationOff) return;
+
+        if (isPaused || isBreak) {
+          preloadAndSetBackground(`/static/images/나무/${currentTheme}/${currentTheme}-휴식시간.png`);
+          return;
+        }
+
+        const imgPath = `/static/images/나무/${currentTheme}/${currentTheme}-나무${bgIndex}.png`;
+        preloadAndSetBackground(imgPath);
+
+        bgIndex++;
+        if (bgIndex > totalImages) {
+          bgIndex = 1;
+          currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+          currentTheme = themes[currentThemeIndex];
+        }
+      }
+
+      function startBackgroundRotation() {
+        changeBackground();
+        setInterval(() => {
+          if (!isPaused && !backgroundAnimationOff) {
+            changeBackground();
+          }
+        }, 300000); // 5분
+      }
+
+      function playBackgroundMusic() {
+        if (selectedMusic && selectedMusic !== "off") {
+          bgMusic.src = `/static/music/${selectedMusic}`;
+          bgMusic.play().catch((err) => {
+            console.log("자동재생 차단됨:", err);
+          });
+        }
+      }
+
+      function startTimer() {
+        updateDisplay();
+        playBackgroundMusic();
+        interval = setInterval(() => {
+          if (!isPaused) {
+            if (seconds > 0) {
+              seconds--;
+              updateDisplay();
+            } else {
+              if (!isBreak) {
+                isBreak = true;
+                seconds = breakMinutes * 60;
+                applyBackground();
+                updateDisplay();
+              } else {
+                clearInterval(interval);
+                bgMusic.pause();
+                bgMusic.currentTime = 0;
+                window.location.href = "/feedback";
+              }
+            }
+          }
+        }, 1000);
+      }
+
+      window.togglePause = function () {
+        isPaused = !isPaused;
+        pauseBtn.textContent = isPaused ? "▶" : "⏸";
+        applyBackground();
+        if (isPaused) {
+          bgMusic.pause();
+        } else {
+          bgMusic.play().catch((err) => console.log("재생 오류:", err));
+        }
+      };
+
+      window.stopTimer = function () {
+        clearInterval(interval);
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
+        window.location.href = "/";
+      };
+
+      startBackgroundRotation();
+      startTimer();
+    });
+  </script>
 </body>
 </html>

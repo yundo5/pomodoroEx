@@ -7,12 +7,6 @@
 </head>
 <body class="bg-session">
 
-    {% if bgm != 'off' %}
-    <audio id="bgmPlayer" autoplay loop>
-        <source src="{{ url_for('static', filename='bgm/' + bgm) }}" type="audio/mpeg">
-    </audio>
-    {% endif %}
-
     <div class="session-wrapper">
         <!-- 왼쪽 설정 박스 -->
         <div class="left-box">
@@ -47,10 +41,10 @@
                 <div class="form-group">
                     <label for="bgmSelect">배경 음악</label>
                     <select name="bgm" id="bgmSelect">
-                        <option value="off">Off</option>
-                        <option value="rain.mp3">Rain</option>
-                        <option value="ocean.mp3">Ocean</option>
-                        <option value="heater.mp3">Heater</option>
+                        <option value="off" {% if bgm == 'off' %}selected{% endif %}>Off</option>
+                        <option value="rain.mp3" {% if bgm == 'rain.mp3' %}selected{% endif %}>Rain</option>
+                        <option value="ocean.mp3" {% if bgm == 'ocean.mp3' %}selected{% endif %}>Ocean</option>
+                        <option value="heater.mp3" {% if bgm == 'heater.mp3' %}selected{% endif %}>Heater</option>
                     </select>
                 </div>
         </div> <!-- 왼쪽 박스 닫기 -->

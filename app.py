@@ -14,13 +14,21 @@ def session_setup():
 @app.route('/start', methods=['POST'])
 def start_session():
     data = request.form.to_dict()
-    
-    # 기본 테마를 설정 (땅부터 시작)
-    data['theme'] = '땅'
-    
-    recorder.save_task(data)  # 데이터 저장
 
-    return render_template('timer.html', session=data)  # timer.html로 이동
+    # 기본값 처리
+    data['theme'] = '땅'  # 기본 테마
+    data['bgm'] = data.get('bgm', 'off')  # bgm 기본값 설정
+    data['workMinutes'] = int(data.get('workMinutes', 25))
+    data['breakMinutes'] = int(data.get('breakMinutes', 5))
+    data['repeatCount'] = int(data.get('repeatCount', 1))
+    data['task'] = data.get('task', '')
+    data['goal'] = data.get('goal', '')
+
+    # 작업 저장
+    recorder.save_task(data)
+
+    # 타이머 화면으로 전달
+    return render_template('timer.html', session=data)
 
 @app.route('/feedback')
 def feedback_page():

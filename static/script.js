@@ -1,227 +1,138 @@
 document.addEventListener("DOMContentLoaded", () => {
     let isWork = true;
-    let interval;
-    let totalRepeats = 1;
-    let currentRepeat = 0;
     let isPaused = false;
+    let isBreak = false;
+    let interval;
+    let seconds = workMinutes * 60;
+    let bgIndex = 1;
+    let currentThemeIndex = 0;
+    const themes = ["땅", "산", "하늘", "성층권", "우주"];
+    const totalImages = 12;
+    let currentTheme = themes[currentThemeIndex];
+    let backgroundAnimationOff = false;
 
-    const progressImage = document.getElementById("progressImage");
+    const display = document.getElementById("timerDisplay");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const body = document.getElementById("main-body");
+    const bgToggle = document.getElementById("bgToggle");
     const bgMusic = document.getElementById("bgMusic");
+
+    // Flask에서 넘겨주는 BGM 값
+    const selectedMusic = "{{ session.get('bgm', 'off') }}";
+
     bgMusic.loop = true;
-    let selectedMusic = "";
 
-    const musicOceanBtn = document.getElementById("musicOcean");
-    if (musicOceanBtn) musicOceanBtn.addEventListener("click", () => selectMusic("ocean.mp3"));
-    const musicHeaterBtn = document.getElementById("musicHeater");
-    if (musicHeaterBtn) musicHeaterBtn.addEventListener("click", () => selectMusic("heater.mp3"));
-    const musicRainBtn = document.getElementById("musicRain");
-    if (musicRainBtn) musicRainBtn.addEventListener("click", () => selectMusic("rain.mp3"));
+    bgToggle.addEventListener("change", () => {
+        backgroundAnimationOff = bgToggle.checked;
+        applyBackground();
+    });
 
-    const testBtn = document.getElementById("testSessionBtn");
-    if (testBtn) testBtn.addEventListener("click", startTestSession);
+    function updateDisplay() {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        display.textContent = `${m}분 ${s < 10 ? "0" + s : s}초`;
+    }
 
-    function getRadioValue(name) {
-        const radios = document.getElementsByName(name);
-        for (const radio of radios) {
-            if (radio.checked) return radio.value;
+    function preloadAndSetBackground(src) {
+        const img = new Image();
+        img.onload = () => {
+            body.style.backgroundImage = `url('${src}')`;
+            body.style.backgroundColor = "";
+        };
+        img.src = src;
+    }
+
+    function applyBackground() {
+        if (backgroundAnimationOff) {
+            body.style.backgroundImage = "none";
+            body.style.backgroundColor = !isPaused && !isBreak ? "green" : "darkred";
+        } else {
+            changeBackground();
         }
-        return "";
+    }
+
+    function changeBackground() {
+        if (backgroundAnimationOff) return;
+
+        const path = isPaused || isBreak
+            ? `/static/images/나무/${currentTheme}/${currentTheme}-휴식시간.png`
+            : `/static/images/나무/${currentTheme}/${currentTheme}-나무${bgIndex}.png`;
+
+        preloadAndSetBackground(path);
+
+        if (!isPaused && !isBreak) {
+            bgIndex++;
+            if (bgIndex > totalImages) {
+                bgIndex = 1;
+                currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+                currentTheme = themes[currentThemeIndex];
+            }
+        }
+    }
+
+    function startBackgroundRotation() {
+        changeBackground();
+        setInterval(() => {
+            if (!isPaused && !backgroundAnimationOff) {
+                changeBackground();
+            }
+        }, 300000); // 5분 간격
     }
 
     function playBackgroundMusic() {
-        if (selectedMusic) {
+        if (selectedMusic && selectedMusic !== "off") {
             bgMusic.src = `/static/music/${selectedMusic}`;
-            bgMusic.play().catch((error) => {
-                console.log("음악 재생 오류:", error);
+            bgMusic.play().catch((err) => {
+                console.log("자동재생 차단:", err);
             });
         }
     }
 
-    function stopBackgroundMusic() {
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
-    }
-
-    function selectMusic(musicFile) {
-        selectedMusic = musicFile;
-    }
-
-    window.startPomodoro = function () {
-        const workMinutes = parseInt(document.getElementById("workMinutes").value) || 25;
-        const breakMinutes = parseInt(document.getElementById("breakMinutes").value) || 5;
-        totalRepeats = parseInt(document.getElementById("repeatCount").value) || 1;
-
-        const focus = getRadioValue("focus");
-        const flow = getRadioValue("flow");
-        const task = getRadioValue("task");
-
-        hideSettings();
-        isWork = true;
-        currentRepeat = 0;
-
-        const durations = {
-            work: workMinutes * 60,
-            break: breakMinutes * 60
-        };
-
-        function runTimer(duration) {
-            let timeLeft = duration;
-            updateTimerDisplay(timeLeft);
-            updateProgressImage(0, duration);
-
-            clearInterval(interval);
-            interval = setInterval(() => {
-                if (!isPaused) {
-                    timeLeft--;
-                    updateTimerDisplay(timeLeft);
-                    updateProgressImage(duration - timeLeft, duration);
-
-                    if (timeLeft <= 0) {
-                        clearInterval(interval);
-                        if (isWork && document.getElementById("alarmToggle").checked) {
-                            document.getElementById("alarmSound").play();
-                        }
-
-                        if (!isWork) currentRepeat++;
-                        if (currentRepeat < totalRepeats) {
-                            isWork = !isWork;
-                            runTimer(isWork ? durations.work : durations.break);
-                        } else {
-                            stopBackgroundMusic();
-                            document.getElementById("feedback").classList.remove("hidden");
-                        }
-                    }
-                }
-            }, 1000);
-        }
-
-        runTimer(durations.work);
+    function startTimer() {
+        updateDisplay();
         playBackgroundMusic();
-    }
 
-    function startTestSession() {
-        const durations = {
-            work: 8,
-            break: 8
-        };
-        totalRepeats = 3;
-        isWork = true;
-        currentRepeat = 0;
-
-        hideSettings();
-        runTestTimer(durations.work, durations.break);
-        playBackgroundMusic();
-    }
-
-    function runTestTimer(workDuration, breakDuration) {
-        let duration = isWork ? workDuration : breakDuration;
-        let timeLeft = duration;
-        updateTimerDisplay(timeLeft);
-        updateProgressImage(0, duration);
-
-        clearInterval(interval);
         interval = setInterval(() => {
             if (!isPaused) {
-                timeLeft--;
-                updateTimerDisplay(timeLeft);
-                updateProgressImage(duration - timeLeft, duration);
-
-                if (timeLeft <= 0) {
-                    clearInterval(interval);
-                    if (isWork && document.getElementById("alarmToggle").checked) {
-                        document.getElementById("alarmSound").play();
-                    }
-
-                    if (!isWork) currentRepeat++;
-                    if (currentRepeat < totalRepeats) {
-                        isWork = !isWork;
-                        runTestTimer(workDuration, breakDuration);
+                if (seconds > 0) {
+                    seconds--;
+                    updateDisplay();
+                } else {
+                    if (!isBreak) {
+                        isBreak = true;
+                        seconds = breakMinutes * 60;
+                        applyBackground();
+                        updateDisplay();
                     } else {
-                        stopBackgroundMusic();
-                        document.getElementById("feedback").classList.remove("hidden");
+                        clearInterval(interval);
+                        bgMusic.pause();
+                        bgMusic.currentTime = 0;
+                        window.location.href = "/feedback";
                     }
                 }
             }
         }, 1000);
     }
 
-    window.pausePomodoro = function () {
+    window.togglePause = function () {
         isPaused = !isPaused;
-        document.getElementById("pauseBtn").textContent = isPaused ? "재개" : "일시정지";
+        pauseBtn.textContent = isPaused ? "▶" : "⏸";
+        applyBackground();
         if (isPaused) {
             bgMusic.pause();
         } else {
-            bgMusic.play();
+            bgMusic.play().catch((err) => console.log("재생 오류:", err));
         }
-    }
+    };
 
-    window.stopPomodoro = function () {
+    window.stopTimer = function () {
         clearInterval(interval);
-        stopBackgroundMusic();
-        resetUI();
-    }
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
+        window.location.href = "/";
+    };
 
-    function resetUI() {
-        document.body.style.backgroundColor = "#ffffff";
-        showSettings();
-        updateTimerDisplay(0);
-        isPaused = false;
-        if (progressImage) progressImage.src = "/static/images/image1.png";
-    }
-
-    function updateTimerDisplay(seconds) {
-        const m = String(Math.floor(seconds / 60)).padStart(2, "0");
-        const s = String(seconds % 60).padStart(2, "0");
-        document.getElementById("timer").textContent = `${m}:${s}`;
-    }
-
-    function updateProgressImage(elapsed, total) {
-        if (!progressImage) return;
-        const percent = (elapsed / total) * 100;
-        const index = Math.min(7, Math.floor(percent / 12.5));
-        progressImage.src = `/static/images/image${index + 1}.png`;
-    }
-
-    function hideSettings() {
-        const settings = document.getElementById("settings");
-        if (settings) settings.classList.add("hidden");
-        document.getElementById("pauseBtn").classList.remove("hidden");
-        document.getElementById("stopBtn").classList.remove("hidden");
-    }
-
-    function showSettings() {
-        const settings = document.getElementById("settings");
-        if (settings) settings.classList.remove("hidden");
-        document.getElementById("pauseBtn").classList.add("hidden");
-        document.getElementById("stopBtn").classList.add("hidden");
-        document.getElementById("pauseBtn").textContent = "일시정지";
-    }
-
-    window.submitFeedback = function () {
-        const focusFeedback = getRadioValue("focusFeedback");
-        const breakFeedback = getRadioValue("breakFeedback");
-
-        const focus = getRadioValue("focus");
-        const flow = getRadioValue("flow");
-        const task = getRadioValue("task");
-
-        fetch("/submit_feedback", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                timestamp: new Date().toISOString(),
-                focus,
-                flow,
-                task,
-                focusFeedback,
-                breakFeedback
-            })
-        }).then(() => {
-            alert("피드백이 제출되었습니다. 감사합니다!");
-            showSettings();
-            document.getElementById("feedback").classList.add("hidden");
-        });
-    }
+    // 초기 실행
+    startBackgroundRotation();
+    startTimer();
 });
