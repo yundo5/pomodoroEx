@@ -3,78 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <title>Pomodoro 타이머</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: sans-serif;
+            color: white;
+            transition: background-image 0.2s linear;
+        }
+
+        #timerDisplay {
+            font-size: 4rem;
+            margin-bottom: 30px;
+            font-weight: bold;
+            text-shadow: 2px 2px 8px black;
+        }
+
+        .controls {
+            position: absolute;
+            top: calc(50% + 75px);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 100px;
+            box-sizing: border-box;
+        }
+
+        .button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid black;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .pause-button {
+            background-color: skyblue;
+            color: black;
+        }
+
+        .stop-button {
+            background-color: red;
+            color: white;
+        }
+    </style>
 </head>
-<body class="bg-timer">
-    <div class="timer-container">
-        <img id="backgroundImage" src="{{ url_for('static', filename='images/나무/땅-나무1.png') }}" class="background" alt="배경">
+<body>
 
-        <div class="quote-box">
-            <p id="quoteText">“참으로 위대한 일은 언제나 서서히 이루어지고 눈에 보이지 않게 성장해 가는 법이다.”</p>
-        </div>
+    <div id="timerDisplay">준비 중...</div>
 
-        <div class="timer-display" id="timerDisplay">25:00</div>
-
-        <div class="button-row">
-            <button id="resetBtn">RESET</button>
-            <button id="stopBtn">STOP</button>
-        </div>
-
-        <!-- 배경음악 경로 수정 -->
-        <audio id="bgMusic" loop autoplay hidden>
-            <source src="{{ url_for('static', filename='music/' + session.get('bgm', 'Rain.mp3')) }}" type="audio/mpeg">
-        </audio>
+    <div class="controls">
+        <button id="pauseBtn" class="button pause-button" onclick="togglePause()">⏸</button>
+        <button class="button stop-button" onclick="stopTimer()">⏹</button>
     </div>
 
     <script>
-        let workMinutes = parseInt("{{ session.get('workMinutes', 25) }}");
-        let breakMinutes = parseInt("{{ session.get('breakMinutes', 5) }}");
-        let repeatCount = parseInt("{{ session.get('repeatCount', 1) }}");
-        let currentCycle = 0;
-        let isWork = true;
-        let timer;
+        const workMinutes = parseInt("{{ session['workMinutes'] }}");
+        const breakMinutes = parseInt("{{ session['breakMinutes'] }}");
+        const totalImages = 12;
+        const themes = ["땅", "산", "하늘", "성층권", "우주"];
+
+        let currentThemeIndex = 0;
+        let currentTheme = themes[currentThemeIndex];
         let seconds = workMinutes * 60;
+        let isPaused = false;
+        let isBreak = false;
+        let interval;
+        let bgIndex = 1;
 
-        const timerDisplay = document.getElementById("timerDisplay");
-        const backgroundImage = document.getElementById("backgroundImage");
+        const display = document.getElementById("timerDisplay");
+        const pauseBtn = document.getElementById("pauseBtn");
 
-        function updateTimer() {
-            let min = String(Math.floor(seconds / 60)).padStart(2, '0');
-            let sec = String(seconds % 60).padStart(2, '0');
-            timerDisplay.textContent = `${min}:${sec}`;
+        function updateDisplay() {
+            let m = Math.floor(seconds / 60);
+            let s = seconds % 60;
+            display.textContent = `${m}분 ${s < 10 ? '0' + s : s}초`;
         }
 
-        function changeBackground(cycle, isWorkPhase) {
-            const stageNames = ["땅", "산", "하늘", "성층권", "우주"];
-            const stage = stageNames[Math.min(cycle, 4)];
-            if (isWorkPhase) {
-                const treeNum = Math.min(Math.floor((workMinutes * 60 - seconds) / ((workMinutes * 60) / 9)) + 1, 9);
-                backgroundImage.src = `/static/images/나무/${stage}-나무${treeNum}.png`;
-            } else {
-                backgroundImage.src = `/static/images/나무/${stage}-휴식시간.png`;
+        function preloadAndSetBackground(src) {
+            const img = new Image();
+            img.onload = () => {
+                document.body.style.backgroundImage = `url('${src}')`;
+            };
+            img.src = src;
+        }
+
+        function changeBackground() {
+            if (isPaused || isBreak) {
+                preloadAndSetBackground(`/static/images/나무/${currentTheme}/${currentTheme}-휴식시간.png`);
+                return;
+            }
+
+            const imgPath = `/static/images/나무/${currentTheme}/${currentTheme}-나무${bgIndex}.png`;
+            preloadAndSetBackground(imgPath);
+
+            bgIndex++;
+            if (bgIndex > totalImages) {
+                bgIndex = 1;
+                currentThemeIndex++;
+                if (currentThemeIndex >= themes.length) {
+                    currentThemeIndex = 0;
+                }
+                currentTheme = themes[currentThemeIndex];
             }
         }
 
+        function startBackgroundRotation() {
+            changeBackground();
+            setInterval(() => {
+                if (!isPaused) {
+                    changeBackground();
+                }
+            }, 3000);
+        }
+
         function startTimer() {
-            timer = setInterval(() => {
-                seconds--;
-                updateTimer();
-                changeBackground(currentCycle, isWork);
-
-                if (seconds <= 0) {
-                    clearInterval(timer);
-
-                    if (isWork) {
-                        isWork = false;
-                        seconds = breakMinutes * 60;
-                        startTimer();
+            updateDisplay();
+            interval = setInterval(() => {
+                if (!isPaused) {
+                    if (seconds > 0) {
+                        seconds--;
+                        updateDisplay();
                     } else {
-                        currentCycle++;
-                        if (currentCycle < repeatCount) {
-                            isWork = true;
-                            seconds = workMinutes * 60;
-                            startTimer();
+                        if (!isBreak) {
+                            isBreak = true;
+                            seconds = breakMinutes * 60;
+                            changeBackground();
+                            updateDisplay();
                         } else {
+                            clearInterval(interval);
                             window.location.href = "/feedback";
                         }
                     }
@@ -82,23 +148,21 @@
             }, 1000);
         }
 
-        document.getElementById("resetBtn").onclick = () => {
-            clearInterval(timer);
-            isWork = true;
-            currentCycle = 0;
-            seconds = workMinutes * 60;
-            updateTimer();
-            changeBackground(0, true);
+        function togglePause() {
+            isPaused = !isPaused;
+            pauseBtn.textContent = isPaused ? "▶" : "⏸";
+            changeBackground();
+        }
+
+        function stopTimer() {
+            clearInterval(interval);
+            window.location.href = "/";
+        }
+
+        window.onload = () => {
+            startBackgroundRotation();
             startTimer();
         };
-
-        document.getElementById("stopBtn").onclick = () => {
-            clearInterval(timer);
-            window.location.href = "/";
-        };
-
-        updateTimer();
-        startTimer();
     </script>
 </body>
 </html>

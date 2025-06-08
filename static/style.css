@@ -1,69 +1,83 @@
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    margin: 40px;
-    color: #222;
-}
-
-/* È­¸é ÀüÃ¼¿¡ ¹è°æ ÀÌ¹ÌÁö ²Ë Ã¤¿ì±â */
-#progressImage {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
+.bg-session {
+    background-image: url('/static/index-background.jpg');
+    background-size: cover;
+    background-position: center;
     height: 100vh;
-    object-fit: cover;
-    z-index: -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: sans-serif;
 }
 
-/* °øÅë ±¸¿ª */
-.section {
-    margin: 15px 0;
+.session-wrapper {
+    display: flex;
+    flex-direction: row; /* ê¸°ë³¸ê°’ì´ë¯€ë¡œ ëª…ì‹œ ì•ˆ í•´ë„ ë¨ */
 }
 
-.hidden {
-    display: none;
+.left-box {
+    width: 30%;
+    background-color: #a0522d;
+    padding: 30px 20px;
+    color: white;
+    box-sizing: border-box;
 }
 
-/* Åë°è Å×ÀÌºí */
-table {
-    margin: 0 auto;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding: 8px;
-    border: 1px solid #aaa;
-}
-
-/* ¹è°æ À½¾Ç ¹öÆ° */
-.music-option {
-    margin: 5px;
-    padding: 10px;
-    cursor: pointer;
-    background-color: #f0f0f0;
-    border: none;
-    border-radius: 5px;
-}
-
-.music-option:hover {
-    background-color: #e0e0e0;
-}
-
-/* ? Ä«µåÇü UI ¹Ú½º */
-.card {
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 16px;
-    padding: 20px;
-    max-width: 600px;
-    margin: 20px auto;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* ? Å¸ÀÌ¸Ó + ¹öÆ° Áß¾Ó Á¤·Ä¿ë */
-.centered {
+.settings-form {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group select {
+    padding: 8px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: none;
+}
+
+.right-box {
+    width: 70%;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 0 20px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-sizing: border-box;
+}
+
+.right-box label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.right-box textarea,
+.right-box input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: none;
+}
+
+.start-button {
+    padding: 12px;
+    background-color: #a0522d;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-top: 20px;
 }

@@ -1,8 +1,5 @@
-# app.py
-from flask import Flask, render_template, request, redirect, url_for, jsonify
-from datetime import datetime
-import os
-from modules import recorder, feedback
+from flask import Flask, render_template, request, redirect, url_for
+from modules import recorder
 
 app = Flask(__name__)
 
@@ -12,13 +9,18 @@ def index():
 
 @app.route('/session')
 def session_setup():
-    return render_template('session.html')
+    return render_template('session.html', bgm='off', task='', goal='')
 
 @app.route('/start', methods=['POST'])
 def start_session():
     data = request.form.to_dict()
-    recorder.save_task(data)
-    return render_template('timer.html', session=data)
+    
+    # 기본 테마를 설정 (땅부터 시작)
+    data['theme'] = '땅'
+    
+    recorder.save_task(data)  # 데이터 저장
+
+    return render_template('timer.html', session=data)  # timer.html로 이동
 
 @app.route('/feedback')
 def feedback_page():
@@ -32,12 +34,12 @@ def submit_feedback():
 
 @app.route('/stats')
 def stats():
-    # 예시 데이터: 딕셔너리 형태로 제공
     stats_data = {
         "focus": 5,
         "flow": 3,
         "task": 2
     }
     return render_template("stats.html", stats=stats_data)
+
 if __name__ == '__main__':
     app.run(debug=True)
