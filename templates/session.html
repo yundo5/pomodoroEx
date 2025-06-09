@@ -37,7 +37,7 @@
             <div class="right-box">
                 <div class="form-group">
                     <label for="workMinutes">집중 시간</label>
-                    <select name="workMinutes" id="workMinutes" required>
+                    <select name="workMinutes" id="workMinutes" style="width: 160px;" required>
                         {% for i in range(5, 60, 5) %}
                         <option value="{{ i }}">{{ i }}분</option>
                         {% endfor %}
@@ -46,7 +46,7 @@
 
                 <div class="form-group">
                     <label for="breakMinutes">휴식 시간</label>
-                    <select name="breakMinutes" id="breakMinutes" required>
+                    <select name="breakMinutes" id="breakMinutes" style="width: 160px;" required>
                         {% for i in range(1, 11) %}
                         <option value="{{ i }}">{{ i }}분</option>
                         {% endfor %}
@@ -55,7 +55,7 @@
 
                 <div class="form-group">
                     <label for="repeatCount">반복 횟수</label>
-                    <select name="repeatCount" id="repeatCount" required>
+                    <select name="repeatCount" id="repeatCount" style="width: 160px;" required>
                         {% for i in range(1, 6) %}
                         <option value="{{ i }}">{{ i }}회</option>
                         {% endfor %}
@@ -64,7 +64,7 @@
 
                 <div class="form-group">
                     <label for="bgmSelect">배경 음악</label>
-                    <select name="bgm" id="bgmSelect">
+                    <select name="bgm" id="bgmSelect" style="width: 160px;">
                         <option value="off" {% if bgm == 'off' %}selected{% endif %}>Off</option>
                         <option value="rain.mp3" {% if bgm == 'rain.mp3' %}selected{% endif %}>Rain</option>
                         <option value="ocean.mp3" {% if bgm == 'ocean.mp3' %}selected{% endif %}>Ocean</option>
