@@ -20,6 +20,12 @@
       background-image: none !important;
       background-color: rgba(255, 0, 0, 0.3) !important;
     }
+    /* 아이콘 위치 조정 */
+    #modeIcon {
+      font-size: 1.2rem;
+      margin: 0 16px;
+      vertical-align: middle;
+    }
   </style>
 </head>
 <body class="timer-page">
@@ -42,7 +48,7 @@
       </div>
 
       <div class="repeat-control-box">
-        <span id="currentCountDisplay">현재 반복횟수: 0</span>
+        <span id="currentCountDisplay">현재 반복횟수: 1</span>
         <span class="max-count">
           최대 반복횟수:
           <button id="minusRepeat" class="repeat-btn">−</button>
@@ -50,6 +56,9 @@
           <button id="plusRepeat" class="repeat-btn">＋</button>
         </span>
       </div>
+
+      <!-- + 버튼과 일시정지 버튼 사이에 아이콘 배치 -->
+      <span id="modeIcon">☀️</span>
 
       <div class="control-buttons">
         <button id="pauseBtn" class="flat-button pause-button">⏸ 일시정지</button>
@@ -89,7 +98,9 @@
     const currentCountDisplay  = document.getElementById("currentCountDisplay");
     const plusBtn              = document.getElementById("plusRepeat");
     const minusBtn             = document.getElementById("minusRepeat");
+    const modeIcon             = document.getElementById("modeIcon");
 
+    // 초기 표시
     repeatDisplay.textContent       = maxpomocount;
     currentCountDisplay.textContent = `현재 반복횟수: ${pomocount}`;
     pauseBtn.textContent            = "⏸ 일시정지";
@@ -155,6 +166,8 @@
       } else {
         changeBackground();
       }
+      // 모드 아이콘 업데이트
+      modeIcon.textContent = isBreak ? '🌕' : '☀️';
     }
 
     function startBackgroundRotation() {

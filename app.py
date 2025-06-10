@@ -25,13 +25,10 @@ def start_session():
     data['goal']         = data.get('goal', '')
 
     recorder.save_task(data)
-
-    # timer.html 로 data(dict)를 session 키로 넘겨줌
     return render_template('timer.html', session=data)
 
 @app.route('/feedback')
 def feedback_page():
-    # 쿼리스트링에서 넘어온 값 읽기
     workMinutes  = request.args.get('workMinutes',  25, type=int)
     breakMinutes = request.args.get('breakMinutes', 5,  type=int)
     repeatCount  = request.args.get('repeatCount',  1,  type=int)
@@ -55,12 +52,40 @@ def submit_feedback():
 
 @app.route('/stats')
 def stats():
-    stats_data = {
-        "focus": 5,
-        "flow": 3,
-        "task": 2
+    # 1) 모든 세션 데이터 로드
+    all_sessions = recorder.get_all_sessions_data()
+
+    # 2) 통계 계산 (modules/recorder.calculate_stats 구현 필요)
+    stats_data = recorder.calculate_stats(all_sessions)
+
+    # 3) 차트용 데이터 구조 생성
+    daily_focus_chart_data = {
+        "labels": sorted(stats_data["daily_focus"].keys()),
+        "datasets": [
+            {
+              "label": level,
+              "data": [ stats_data["daily_focus"][date].get(level, 0)
+                        for date in sorted(stats_data["daily_focus"].keys()) ]
+            }
+            for level in ["매우 집중", "잘 집중", "보통", "집중 어려움", "평가 없음"]
+        ]
     }
-    return render_template("stats.html", stats=stats_data)
+    task_types_chart_data = {
+        "labels": list(stats_data["task_types"].keys()),
+        "data":   list(stats_data["task_types"].values())
+    }
+    pomodoro_settings_chart_data = {
+        "labels": list(stats_data["pomodoro_settings"].keys()),
+        "data":   list(stats_data["pomodoro_settings"].values())
+    }
+
+    # 4) stats.html 에 3가지 차트 데이터 전달
+    return render_template(
+        "stats.html",
+        daily_focus_chart_data=daily_focus_chart_data,
+        task_types_chart_data=task_types_chart_data,
+        pomodoro_settings_chart_data=pomodoro_settings_chart_data
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)
