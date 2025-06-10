@@ -40,7 +40,7 @@
   <audio id="bgMusic" loop></audio>
 
   <script>
-    // 서버 세션에서 온 값
+    // 서버에서 전달된 설정값
     const selectedMusic  = "{{ session.get('bgm', 'off') }}";
     const workMinutes    = parseInt("{{ session['workMinutes'] }}");
     const breakMinutes   = parseInt("{{ session['breakMinutes'] }}");
@@ -101,14 +101,12 @@
       window.location.href = "/session";
     });
 
-    // 화면에 시간 표시
     function updateDisplay() {
       const m = Math.floor(seconds / 60);
       const s = seconds % 60;
       display.textContent = `${m}분 ${s < 10 ? "0"+s : s}초`;
     }
 
-    // 배경 이미지 로드
     function preloadAndSetBackground(src) {
       const img = new Image();
       img.onload = () => {
@@ -118,17 +116,15 @@
       img.src = src;
     }
 
-    // 배경 적용
     function applyBackground() {
       if (backgroundAnimationOff) {
         bodyElem.style.backgroundImage = "none";
-        bodyElem.style.backgroundColor = isBreak ? "darkred" : "green";
+        bodyElem.style.backgroundColor = isBreak ? "red" : "green";
       } else {
         changeBackground();
       }
     }
 
-    // 배경 순환
     function changeBackground() {
       if (backgroundAnimationOff) return;
       const path = isBreak
@@ -145,17 +141,15 @@
       }
     }
 
-    // 배경 자동 순환 시작
     function startBackgroundRotation() {
       changeBackground();
       setInterval(() => {
         if (!isPaused && !backgroundAnimationOff) {
           changeBackground();
         }
-      }, 60000);
+      }, 300000);
     }
 
-    // 배경 음악 재생
     function playBackgroundMusic() {
       if (selectedMusic && selectedMusic !== "off") {
         bgMusic.src = `/static/music/${selectedMusic}`;
@@ -163,7 +157,6 @@
       }
     }
 
-    // 타이머 로직
     function startTimer() {
       updateDisplay();
       playBackgroundMusic();
@@ -190,18 +183,24 @@
               applyBackground();
               updateDisplay();
             } else {
-              // 반복 완료 → 피드백
+              // 반복 완료 → 피드백 페이지
               clearInterval(interval);
               bgMusic.pause();
               bgMusic.currentTime = 0;
-              window.location.href = "/feedback";
+              const qs = new URLSearchParams({
+                workMinutes: workMinutes,
+                breakMinutes: breakMinutes,
+                repeatCount: maxpomocount,
+                task: "{{ session['task'] }}",
+                goal: "{{ session['goal'] }}"
+              });
+              window.location.href = "/feedback?" + qs.toString();
             }
           }
         }
       }, 1000);
     }
 
-    // 일시정지/재개
     window.togglePause = function() {
       isPaused = !isPaused;
       pauseBtn.textContent = isPaused ? "▶ 재개" : "⏸ 일시정지";
@@ -210,7 +209,6 @@
       else playBackgroundMusic();
     };
 
-    // 종료
     window.stopTimer = function() {
       clearInterval(interval);
       bgMusic.pause();
@@ -218,7 +216,7 @@
       window.location.href = "/feedback";
     };
 
-    // 초기화
+    // 초기 실행
     startBackgroundRotation();
     startTimer();
   </script>

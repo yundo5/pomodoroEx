@@ -9,36 +9,43 @@ def index():
 
 @app.route('/session')
 def session_setup():
-    # session.html 폼을 띄울 때 기본값 지정
-    return render_template('session.html',
-                           bgm='off',
-                           task='',
-                           goal='')
+    return render_template('session.html', bgm='off', task='', goal='')
 
 @app.route('/start', methods=['POST'])
 def start_session():
-    # form 에서 전달된 모든 값을 딕셔너리로 수집
     data = request.form.to_dict()
 
     # 기본값 처리
-    data['theme']        = '땅'                       # 기본 테마
-    data['bgm']          = data.get('bgm', 'off')     # BGM 기본값
+    data['theme']        = '땅'
+    data['bgm']          = data.get('bgm', 'off')
     data['workMinutes']  = int(data.get('workMinutes', 25))
     data['breakMinutes'] = int(data.get('breakMinutes', 5))
-    # ★ 여기서 폼의 repeatCount 값을 받아 저장합니다.
     data['repeatCount']  = int(data.get('repeatCount', 1))
     data['task']         = data.get('task', '')
     data['goal']         = data.get('goal', '')
 
-    # 데이터 저장 (로그나 기록용)
     recorder.save_task(data)
 
-    # timer.html 로 넘어갈 때 data 를 session 이라는 이름으로 넘겨줍니다.
+    # timer.html 로 data(dict)를 session 키로 넘겨줌
     return render_template('timer.html', session=data)
 
 @app.route('/feedback')
 def feedback_page():
-    return render_template('feedback.html')
+    # 쿼리스트링에서 넘어온 값 읽기
+    workMinutes  = request.args.get('workMinutes',  25, type=int)
+    breakMinutes = request.args.get('breakMinutes', 5,  type=int)
+    repeatCount  = request.args.get('repeatCount',  1,  type=int)
+    task         = request.args.get('task',         '', type=str)
+    goal         = request.args.get('goal',         '', type=str)
+
+    return render_template(
+        'feedback.html',
+        workMinutes=workMinutes,
+        breakMinutes=breakMinutes,
+        repeatCount=repeatCount,
+        task=task,
+        goal=goal
+    )
 
 @app.route('/submit_feedback', methods=['POST'])
 def submit_feedback():

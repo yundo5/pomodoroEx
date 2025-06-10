@@ -10,11 +10,11 @@
     <canvas id="myChart" width="400" height="200"></canvas>
 
     <script>
-        // Flask에서 전달받은 stats 데이터를 JSON으로 변환
-        
+        // Flask에서 전달된 stats 딕셔너리를 JS 객체로 바로 할당
+        const statsData = JSON.parse('{{ stats|tojson|safe }}');
 
         const ctx = document.getElementById('myChart').getContext('2d');
-        const chart = new Chart(ctx, {
+        new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: Object.keys(statsData),
