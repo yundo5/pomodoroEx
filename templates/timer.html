@@ -139,6 +139,12 @@
       img.onload = () => {
         bodyElem.style.backgroundImage = `url('${src}')`;
       };
+      img.onerror = () => {
+    console.error("이미지 로드 실패:", src);
+    // 오류 페이지로 이동하면서 메시지 전달
+    const errorMsg = encodeURIComponent("이미지가 없거나 이름이 잘못되었습니다.");
+    window.location.href = `/error?message=${errorMsg}`;
+  };
       img.src = src;
     }
     function changeBackground() {
