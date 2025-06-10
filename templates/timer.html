@@ -4,6 +4,23 @@
   <meta charset="UTF-8" />
   <title>Pomodoro 타이머</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    @keyframes focusGradient {
+      0%   { background-color: #82E891; }
+      33%  { background-color: #D3D3D3; }
+      66%  { background-color: #7AC8F5; }
+      100% { background-color: #82E891; }
+    }
+    #main-body.focus-gradient {
+      animation: focusGradient 9s ease-in-out infinite;
+      background-image: none !important;
+    }
+    #main-body.break-solid {
+      animation: none !important;
+      background-image: none !important;
+      background-color: rgba(255, 0, 0, 0.3) !important;
+    }
+  </style>
 </head>
 <body class="timer-page">
   <div class="wrapper">
@@ -25,14 +42,18 @@
       </div>
 
       <div class="repeat-control-box">
-        <button id="minusRepeat" class="repeat-btn">−</button>
-        <span id="repeatCountDisplay"></span>
-        <button id="plusRepeat" class="repeat-btn">＋</button>
+        <span id="currentCountDisplay">현재 반복횟수: 0</span>
+        <span class="max-count">
+          최대 반복횟수:
+          <button id="minusRepeat" class="repeat-btn">−</button>
+          <span id="repeatCountDisplay"></span>
+          <button id="plusRepeat" class="repeat-btn">＋</button>
+        </span>
       </div>
 
       <div class="control-buttons">
-        <button id="pauseBtn" class="flat-button pause-button" onclick="togglePause()">⏸ 일시정지</button>
-        <button class="flat-button stop-button" onclick="stopTimer()">⏹ 종료하기</button>
+        <button id="pauseBtn" class="flat-button pause-button">⏸ 일시정지</button>
+        <button id="stopBtn" class="flat-button stop-button">⏹ 종료하기</button>
       </div>
     </div>
   </div>
@@ -40,14 +61,12 @@
   <audio id="bgMusic" loop></audio>
 
   <script>
-    // 서버에서 전달된 설정값
     const selectedMusic  = "{{ session.get('bgm', 'off') }}";
     const workMinutes    = parseInt("{{ session['workMinutes'] }}");
     const breakMinutes   = parseInt("{{ session['breakMinutes'] }}");
     let maxpomocount     = parseInt("{{ session['repeatCount'] }}") || 1;
-    let pomocount        = 0;
+    let pomocount        = 1;
 
-    // 상태 변수
     let isBreak               = false;
     let isPaused              = false;
     let interval              = null;
@@ -59,21 +78,22 @@
     let currentTheme          = themes[currentThemeIndex];
     let backgroundAnimationOff= false;
 
-    // DOM 요소
-    const display       = document.getElementById("timerDisplay");
-    const pauseBtn      = document.getElementById("pauseBtn");
-    const bodyElem      = document.getElementById("main-body");
-    const bgToggle      = document.getElementById("bgToggle");
-    const bgMusic       = document.getElementById("bgMusic");
-    const volumeRange   = document.getElementById("volumeRange");
-    const repeatDisplay = document.getElementById("repeatCountDisplay");
-    const plusBtn       = document.getElementById("plusRepeat");
-    const minusBtn      = document.getElementById("minusRepeat");
+    const display              = document.getElementById("timerDisplay");
+    const pauseBtn             = document.getElementById("pauseBtn");
+    const stopBtn              = document.getElementById("stopBtn");
+    const bodyElem             = document.getElementById("main-body");
+    const bgToggle             = document.getElementById("bgToggle");
+    const bgMusic              = document.getElementById("bgMusic");
+    const volumeRange          = document.getElementById("volumeRange");
+    const repeatDisplay        = document.getElementById("repeatCountDisplay");
+    const currentCountDisplay  = document.getElementById("currentCountDisplay");
+    const plusBtn              = document.getElementById("plusRepeat");
+    const minusBtn             = document.getElementById("minusRepeat");
 
-    // 초기 반복 횟수 표시
-    repeatDisplay.textContent = maxpomocount;
+    repeatDisplay.textContent       = maxpomocount;
+    currentCountDisplay.textContent = `현재 반복횟수: ${pomocount}`;
+    pauseBtn.textContent            = "⏸ 일시정지";
 
-    // 반복 횟수 조절
     plusBtn.addEventListener("click", () => {
       maxpomocount++;
       repeatDisplay.textContent = maxpomocount;
@@ -84,22 +104,18 @@
         repeatDisplay.textContent = maxpomocount;
       }
     });
-
-    // 배경 애니메이션 토글
     bgToggle.addEventListener("change", () => {
       backgroundAnimationOff = !bgToggle.checked;
       applyBackground();
     });
-
-    // 볼륨 조절
     volumeRange.addEventListener("input", () => {
       bgMusic.volume = volumeRange.value / 100;
     });
-
-    // 뒤로가기
     document.getElementById("backButton").addEventListener("click", () => {
       window.location.href = "/session";
     });
+    pauseBtn.addEventListener("click", togglePause);
+    stopBtn.addEventListener("click", stopTimer);
 
     function updateDisplay() {
       const m = Math.floor(seconds / 60);
@@ -111,20 +127,9 @@
       const img = new Image();
       img.onload = () => {
         bodyElem.style.backgroundImage = `url('${src}')`;
-        bodyElem.style.backgroundColor = "";
       };
       img.src = src;
     }
-
-    function applyBackground() {
-      if (backgroundAnimationOff) {
-        bodyElem.style.backgroundImage = "none";
-        bodyElem.style.backgroundColor = isBreak ? "red" : "green";
-      } else {
-        changeBackground();
-      }
-    }
-
     function changeBackground() {
       if (backgroundAnimationOff) return;
       const path = isBreak
@@ -141,13 +146,24 @@
       }
     }
 
+    function applyBackground() {
+      bodyElem.classList.remove('focus-gradient','break-solid');
+      bodyElem.style.backgroundImage = 'none';
+      if (backgroundAnimationOff) {
+        if (isBreak)      bodyElem.classList.add('break-solid');
+        else              bodyElem.classList.add('focus-gradient');
+      } else {
+        changeBackground();
+      }
+    }
+
     function startBackgroundRotation() {
-      changeBackground();
+      applyBackground();
       setInterval(() => {
         if (!isPaused && !backgroundAnimationOff) {
           changeBackground();
         }
-      }, 300000);
+      }, 60000);
     }
 
     function playBackgroundMusic() {
@@ -162,7 +178,6 @@
       playBackgroundMusic();
       interval = setInterval(() => {
         if (isPaused) return;
-
         if (seconds > 0) {
           seconds--;
           updateDisplay();
@@ -174,49 +189,49 @@
             applyBackground();
             updateDisplay();
           } else {
-            // 휴식 종료
-            pomocount++;
-            if (pomocount < maxpomocount) {
-              // 다음 집중 세션
+            // 휴식 종료 시 → 비교 먼저
+            const qs = new URLSearchParams({
+              workMinutes, breakMinutes,
+              repeatCount: maxpomocount,
+              task: "{{ session['task'] }}",
+              goal: "{{ session['goal'] }}"
+            }).toString();
+
+            if (pomocount >= maxpomocount) {
+              // 모든 반복 완료 → 피드백
+              clearInterval(interval);
+              bgMusic.pause();
+              bgMusic.currentTime = 0;
+              window.location.href = "/feedback?" + qs;
+            } else {
+              // 아직 반복 남음 → 카운트 증가 후 다음 집중
+              pomocount++;
+              currentCountDisplay.textContent = `현재 반복횟수: ${pomocount}`;
               isBreak = false;
               seconds = workMinutes * 60;
               applyBackground();
               updateDisplay();
-            } else {
-              // 반복 완료 → 피드백 페이지
-              clearInterval(interval);
-              bgMusic.pause();
-              bgMusic.currentTime = 0;
-              const qs = new URLSearchParams({
-                workMinutes: workMinutes,
-                breakMinutes: breakMinutes,
-                repeatCount: maxpomocount,
-                task: "{{ session['task'] }}",
-                goal: "{{ session['goal'] }}"
-              });
-              window.location.href = "/feedback?" + qs.toString();
             }
           }
         }
       }, 1000);
     }
 
-    window.togglePause = function() {
+    function togglePause() {
       isPaused = !isPaused;
       pauseBtn.textContent = isPaused ? "▶ 재개" : "⏸ 일시정지";
-      applyBackground();
       if (isPaused) bgMusic.pause();
-      else playBackgroundMusic();
-    };
+      else          bgMusic.play().catch(() => {});
+      applyBackground();
+    }
 
-    window.stopTimer = function() {
+    function stopTimer() {
       clearInterval(interval);
       bgMusic.pause();
       bgMusic.currentTime = 0;
       window.location.href = "/feedback";
-    };
+    }
 
-    // 초기 실행
     startBackgroundRotation();
     startTimer();
   </script>
