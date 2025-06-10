@@ -31,6 +31,7 @@ def start_session():
 
 @app.route('/feedback')
 def feedback_session():    
+    data = {}
     # 기본 테마를 설정 (땅부터 시작)
     data['theme'] = '땅'
     
