@@ -16,15 +16,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const body = document.getElementById("main-body");
     const bgToggle = document.getElementById("bgToggle");
     const bgMusic = document.getElementById("bgMusic");
+    const backBtn = document.getElementById("backButton");
+    const volumeSlider = document.getElementById("volumeRange");
 
-    // Flask에서 넘겨주는 BGM 값
+    // ✅ Flask에서 넘겨주는 BGM
     const selectedMusic = "{{ session.get('bgm', 'off') }}";
-
     bgMusic.loop = true;
 
-    bgToggle.addEventListener("change", () => {
-        backgroundAnimationOff = bgToggle.checked;
+    // ✅ 배경 애니메이션 토글
+    bgToggle?.addEventListener("change", () => {
+        backgroundAnimationOff = !bgToggle.checked;
         applyBackground();
+    });
+
+    // ✅ 뒤로가기 버튼
+    backBtn?.addEventListener("click", () => {
+        window.location.href = "/session";
+    });
+
+    // ✅ 볼륨 슬라이더
+    volumeSlider?.addEventListener("input", () => {
+        const value = parseInt(volumeSlider.value, 10);
+        bgMusic.volume = value / 100;
     });
 
     function updateDisplay() {
@@ -76,12 +89,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!isPaused && !backgroundAnimationOff) {
                 changeBackground();
             }
-        }, 300000); // 5분 간격
+        }, 300000); // 5분마다 변경
     }
 
     function playBackgroundMusic() {
         if (selectedMusic && selectedMusic !== "off") {
             bgMusic.src = `/static/music/${selectedMusic}`;
+            const initialVolume = volumeSlider ? parseInt(volumeSlider.value, 10) / 100 : 1;
+            bgMusic.volume = initialVolume;
             bgMusic.play().catch((err) => {
                 console.log("자동재생 차단:", err);
             });
@@ -114,9 +129,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 1000);
     }
 
+    // ✅ 일시정지 토글 함수
     window.togglePause = function () {
         isPaused = !isPaused;
-        pauseBtn.textContent = isPaused ? "▶" : "⏸";
+        pauseBtn.textContent = isPaused ? "▶ 재개" : "⏸ 일시정지";
         applyBackground();
         if (isPaused) {
             bgMusic.pause();
@@ -125,14 +141,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
+    // ✅ 종료 함수
     window.stopTimer = function () {
         clearInterval(interval);
         bgMusic.pause();
         bgMusic.currentTime = 0;
-        window.location.href = "/";
+        window.location.href = "/feedback";
     };
 
-    // 초기 실행
+    // ✅ 초기 실행
     startBackgroundRotation();
     startTimer();
 });

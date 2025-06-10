@@ -1,97 +1,263 @@
-.bg-session {
-    background-image: url('/static/index-background.jpg');
-    background-size: cover;
-    background-position: center;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: sans-serif;
+style.css
+/* ===== 공통 초기화 ===== */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+/* ===== 세션 설정 화면 (session.html) ===== */
+body.bg-session {
+  background-image: url('/static/index-background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-color: #ffffff;
+  color: #333;
+  min-height: 100vh;
+  overflow-y: auto;
 }
 
 .session-wrapper {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 50px;
+  padding: 40px;
+  max-width: 1000px;
+  margin: 50px auto;
+  background-color: #fdfdfd;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.left-box, .right-box {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 300px;
+  flex: 1;
 }
 
 .left-box {
-    width: 30%;
-    background-color: #a0522d;
-    padding: 30px 20px;
-    color: white;
-    box-sizing: border-box;
-}
-
-.settings-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group label {
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.form-group select {
-    padding: 8px;
-    font-size: 1rem;
-    border-radius: 5px;
-    border: none;
-}
-
-/* 체크박스 전용 스타일 추가 */
-.form-group input[type="checkbox"] {
-    transform: scale(1.2);
-    margin-right: 8px;
-    cursor: pointer;
-}
-
-.form-group.checkbox-group {
-    flex-direction: row;
-    align-items: center;
-    font-weight: bold;
-    gap: 10px;
+  background-color: #a0522d;
+  padding: 30px 20px;
+  color: white;
+  box-sizing: border-box;
 }
 
 .right-box {
-    width: 70%;
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 40px;
-    border-radius: 0 20px 20px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 0 20px 20px 0;
+  box-sizing: border-box;
 }
 
-.right-box label {
-    font-weight: bold;
-    margin-bottom: 5px;
+/* ✅ 드롭다운 너비 줄이기 */
+.right-box select {
+  max-width: 160px;
 }
 
-.right-box textarea,
-.right-box input {
-    width: 100%;
-    padding: 10px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    resize: none;
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+textarea, input, select {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+  resize: none;
+}
+
+.form-group input[type="checkbox"] {
+  transform: scale(1.2);
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.form-group.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  font-weight: bold;
+  gap: 10px;
+}
+
+.start-button-wrapper {
+  width: 100%;
+  text-align: center;
+  margin-top: 30px;
 }
 
 .start-button {
-    padding: 12px;
-    background-color: #a0522d;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    margin-top: 20px;
+  padding: 15px 80px;
+  font-size: 20px;
+  border: none;
+  border-radius: 30px;
+  background-color: #a14116;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.start-button:hover {
+  background-color: #7d2f0f;
+}
+
+/* ===== 타이머 화면 (timer.html) ===== */
+body.timer-page {
+  height: 100vh;
+  overflow: hidden;
+  color: white;
+}
+
+.wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+#main-body {
+  flex: 1 0 auto;
+  background-image: url('/static/images/your-background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: background-image 0.2s linear, background-color 0.3s ease;
+}
+
+#timerDisplay {
+  font-size: 4rem;
+  margin-bottom: 30px;
+  font-weight: bold;
+  text-shadow: 2px 2px 8px black;
+}
+
+.bottom-options {
+  height: 100px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 20px;
+  color: black;
+  flex-shrink: 0;
+}
+
+#backButton {
+  background-color: skyblue;
+  color: black;
+  border: 2px solid black;
+  border-radius: 20px;
+  padding: 10px 25px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#volumeRange {
+  width: 200px;
+  height: 8px;
+  background: #ddd;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.flat-button {
+  padding: 10px 40px;
+  border-radius: 12px;
+  font-size: 1rem;
+  border: 2px solid black;
+  cursor: pointer;
+}
+
+.pause-button {
+  background-color: skyblue;
+  color: black;
+}
+
+.stop-button {
+  background-color: red;
+  color: white;
+}
+
+.grid-2x2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 두 열 */
+    grid-template-rows: auto auto;  /* 두 행 */
+    gap: 30px;
+}
+textarea.wide-textarea {
+  width: 100%;
+  height: 180px;
+  font-size: 16px;
+  resize: vertical;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+}
+/* ===== 반복 횟수 조절 버튼 ===== */
+.repeat-control-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+  justify-content: center;
+}
+.repeat-btn {
+  border: 2px solid #222;
+  background: none;
+  color: #222;
+  font-size: 1.2rem;
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  outline: none;
+}
+.repeat-btn:active {
+  background: #f0f0f0;
+}
+#repeatCountDisplay {
+  min-width: 40px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1rem;
 }

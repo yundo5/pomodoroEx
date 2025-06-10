@@ -3,155 +3,135 @@
 <head>
   <meta charset="UTF-8" />
   <title>Pomodoro 타이머</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: sans-serif;
-      color: white;
-      transition: background-image 0.2s linear, background-color 0.3s ease;
-    }
-
-    #timerDisplay {
-      font-size: 4rem;
-      margin-bottom: 30px;
-      font-weight: bold;
-      text-shadow: 2px 2px 8px black;
-    }
-
-    .controls {
-      position: absolute;
-      top: calc(50% + 75px);
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      padding: 0 100px;
-      box-sizing: border-box;
-    }
-
-    .button {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      border: 2px solid black;
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-
-    .pause-button {
-      background-color: skyblue;
-      color: black;
-    }
-
-    .stop-button {
-      background-color: red;
-      color: white;
-    }
-
-    .top-controls {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 1rem;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body id="main-body">
-  <!-- 배경 애니메이션 토글 -->
-  <div class="top-controls">
-    <label>
-      <input type="checkbox" id="bgToggle" />
-      배경 애니메이션 OFF
-    </label>
+<body class="timer-page">
+  <div class="wrapper">
+    <div id="main-body">
+      <div id="timerDisplay">준비 중...</div>
+    </div>
+
+    <div class="bottom-options">
+      <button id="backButton">← 뒤로가기</button>
+
+      <label class="checkbox-label">
+        <input type="checkbox" id="bgToggle" checked />
+        배경 애니메이션 ON
+      </label>
+
+      <div class="volume-control">
+        <label for="volumeRange">배경음악</label>
+        <input type="range" id="volumeRange" min="0" max="100" value="100" />
+      </div>
+
+      <div class="repeat-control-box">
+        <button id="minusRepeat" class="repeat-btn">−</button>
+        <span id="repeatCountDisplay"></span>
+        <button id="plusRepeat" class="repeat-btn">＋</button>
+      </div>
+
+      <div class="control-buttons">
+        <button id="pauseBtn" class="flat-button pause-button" onclick="togglePause()">⏸ 일시정지</button>
+        <button class="flat-button stop-button" onclick="stopTimer()">⏹ 종료하기</button>
+      </div>
+    </div>
   </div>
 
-  <!-- 타이머 표시 -->
-  <div id="timerDisplay">준비 중...</div>
-
-  <!-- 컨트롤 버튼 -->
-  <div class="controls">
-    <button id="pauseBtn" class="button pause-button" onclick="togglePause()">⏸</button>
-    <button class="button stop-button" onclick="stopTimer()">⏹</button>
-  </div>
-
-  <!-- BGM 오디오 -->
   <audio id="bgMusic" loop></audio>
 
-  <!-- Flask에서 BGM 값 전달 -->
   <script>
-    const selectedMusic = "{{ session.get('bgm', 'off') }}";
-    const workMinutes = parseInt("{{ session['workMinutes'] }}");
-    const breakMinutes = parseInt("{{ session['breakMinutes'] }}");
-  </script>
+    // 서버에서 전달된 설정값
+    const selectedMusic  = "{{ session.get('bgm', 'off') }}";
+    const workMinutes    = parseInt("{{ session['workMinutes'] }}");
+    const breakMinutes   = parseInt("{{ session['breakMinutes'] }}");
+    let maxpomocount     = parseInt("{{ session['repeatCount'] }}") || 1;
+    let pomocount        = 0;
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      let isWork = true;
-      let interval;
-      let seconds = workMinutes * 60;
-      let isPaused = false;
-      let isBreak = false;
-      let bgIndex = 1;
-      let currentThemeIndex = 0;
-      const totalImages = 12;
-      const themes = ["땅", "산", "하늘", "성층권", "우주"];
-      let currentTheme = themes[currentThemeIndex];
-      let backgroundAnimationOff = false;
+    // 상태 변수
+    let isBreak               = false;
+    let isPaused              = false;
+    let interval              = null;
+    let seconds               = workMinutes * 60;
+    let bgIndex               = 1;
+    let currentThemeIndex     = 0;
+    const themes              = ["땅","산","하늘","성층권","우주"];
+    const totalImages         = 12;
+    let currentTheme          = themes[currentThemeIndex];
+    let backgroundAnimationOff= false;
 
-      const display = document.getElementById("timerDisplay");
-      const pauseBtn = document.getElementById("pauseBtn");
-      const body = document.getElementById("main-body");
-      const bgToggle = document.getElementById("bgToggle");
-      const bgMusic = document.getElementById("bgMusic");
+    // DOM 요소
+    const display       = document.getElementById("timerDisplay");
+    const pauseBtn      = document.getElementById("pauseBtn");
+    const bodyElem      = document.getElementById("main-body");
+    const bgToggle      = document.getElementById("bgToggle");
+    const bgMusic       = document.getElementById("bgMusic");
+    const volumeRange   = document.getElementById("volumeRange");
+    const repeatDisplay = document.getElementById("repeatCountDisplay");
+    const plusBtn       = document.getElementById("plusRepeat");
+    const minusBtn      = document.getElementById("minusRepeat");
 
-      bgToggle.addEventListener("change", () => {
-        backgroundAnimationOff = bgToggle.checked;
-        applyBackground();
-      });
+    // 초기 반복 횟수 표시
+    repeatDisplay.textContent = maxpomocount;
 
-      function updateDisplay() {
-        let m = Math.floor(seconds / 60);
-        let s = seconds % 60;
-        display.textContent = `${m}분 ${s < 10 ? "0" + s : s}초`;
+    // 반복 횟수 조절
+    plusBtn.addEventListener("click", () => {
+      maxpomocount++;
+      repeatDisplay.textContent = maxpomocount;
+    });
+    minusBtn.addEventListener("click", () => {
+      if (maxpomocount > 1) {
+        maxpomocount--;
+        repeatDisplay.textContent = maxpomocount;
       }
+    });
 
-      function preloadAndSetBackground(src) {
-        const img = new Image();
-        img.onload = () => {
-          body.style.backgroundImage = `url('${src}')`;
-          body.style.backgroundColor = "";
-        };
-        img.src = src;
+    // 배경 애니메이션 토글
+    bgToggle.addEventListener("change", () => {
+      backgroundAnimationOff = !bgToggle.checked;
+      applyBackground();
+    });
+
+    // 볼륨 조절
+    volumeRange.addEventListener("input", () => {
+      bgMusic.volume = volumeRange.value / 100;
+    });
+
+    // 뒤로가기
+    document.getElementById("backButton").addEventListener("click", () => {
+      window.location.href = "/session";
+    });
+
+    function updateDisplay() {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      display.textContent = `${m}분 ${s < 10 ? "0"+s : s}초`;
+    }
+
+    function preloadAndSetBackground(src) {
+      const img = new Image();
+      img.onload = () => {
+        bodyElem.style.backgroundImage = `url('${src}')`;
+        bodyElem.style.backgroundColor = "";
+      };
+      img.src = src;
+    }
+
+    function applyBackground() {
+      if (backgroundAnimationOff) {
+        bodyElem.style.backgroundImage = "none";
+        bodyElem.style.backgroundColor = isBreak ? "red" : "green";
+      } else {
+        changeBackground();
       }
+    }
 
-      function applyBackground() {
-        if (backgroundAnimationOff) {
-          body.style.backgroundImage = "none";
-          body.style.backgroundColor = !isPaused && !isBreak ? "green" : "darkred";
-        } else {
-          changeBackground();
-        }
-      }
-
-      function changeBackground() {
-        if (backgroundAnimationOff) return;
-
-        if (isPaused || isBreak) {
-          preloadAndSetBackground(`/static/images/나무/${currentTheme}/${currentTheme}-휴식시간.png`);
-          return;
-        }
-
-        const imgPath = `/static/images/나무/${currentTheme}/${currentTheme}-나무${bgIndex}.png`;
-        preloadAndSetBackground(imgPath);
-
+    function changeBackground() {
+      if (backgroundAnimationOff) return;
+      const path = isBreak
+        ? `/static/images/나무/${currentTheme}/${currentTheme}-휴식시간.png`
+        : `/static/images/나무/${currentTheme}/${currentTheme}-나무${bgIndex}.png`;
+      preloadAndSetBackground(path);
+      if (!isBreak) {
         bgIndex++;
         if (bgIndex > totalImages) {
           bgIndex = 1;
@@ -159,71 +139,86 @@
           currentTheme = themes[currentThemeIndex];
         }
       }
+    }
 
-      function startBackgroundRotation() {
-        changeBackground();
-        setInterval(() => {
-          if (!isPaused && !backgroundAnimationOff) {
-            changeBackground();
-          }
-        }, 300000); // 5분
-      }
-
-      function playBackgroundMusic() {
-        if (selectedMusic && selectedMusic !== "off") {
-          bgMusic.src = `/static/music/${selectedMusic}`;
-          bgMusic.play().catch((err) => {
-            console.log("자동재생 차단됨:", err);
-          });
+    function startBackgroundRotation() {
+      changeBackground();
+      setInterval(() => {
+        if (!isPaused && !backgroundAnimationOff) {
+          changeBackground();
         }
-      }
+      }, 300000);
+    }
 
-      function startTimer() {
-        updateDisplay();
-        playBackgroundMusic();
-        interval = setInterval(() => {
-          if (!isPaused) {
-            if (seconds > 0) {
-              seconds--;
+    function playBackgroundMusic() {
+      if (selectedMusic && selectedMusic !== "off") {
+        bgMusic.src = `/static/music/${selectedMusic}`;
+        bgMusic.play().catch(err => console.log("자동재생 차단:", err));
+      }
+    }
+
+    function startTimer() {
+      updateDisplay();
+      playBackgroundMusic();
+      interval = setInterval(() => {
+        if (isPaused) return;
+
+        if (seconds > 0) {
+          seconds--;
+          updateDisplay();
+        } else {
+          if (!isBreak) {
+            // 집중 → 휴식
+            isBreak = true;
+            seconds = breakMinutes * 60;
+            applyBackground();
+            updateDisplay();
+          } else {
+            // 휴식 종료
+            pomocount++;
+            if (pomocount < maxpomocount) {
+              // 다음 집중 세션
+              isBreak = false;
+              seconds = workMinutes * 60;
+              applyBackground();
               updateDisplay();
             } else {
-              if (!isBreak) {
-                isBreak = true;
-                seconds = breakMinutes * 60;
-                applyBackground();
-                updateDisplay();
-              } else {
-                clearInterval(interval);
-                bgMusic.pause();
-                bgMusic.currentTime = 0;
-                window.location.href = "/feedback";
-              }
+              // 반복 완료 → 피드백 페이지
+              clearInterval(interval);
+              bgMusic.pause();
+              bgMusic.currentTime = 0;
+              const qs = new URLSearchParams({
+                workMinutes: workMinutes,
+                breakMinutes: breakMinutes,
+                repeatCount: maxpomocount,
+                task: "{{ session['task'] }}",
+                goal: "{{ session['goal'] }}"
+              });
+              window.location.href = "/feedback?" + qs.toString();
             }
           }
-        }, 1000);
-      }
-
-      window.togglePause = function () {
-        isPaused = !isPaused;
-        pauseBtn.textContent = isPaused ? "▶" : "⏸";
-        applyBackground();
-        if (isPaused) {
-          bgMusic.pause();
-        } else {
-          bgMusic.play().catch((err) => console.log("재생 오류:", err));
         }
-      };
+      }, 1000);
+    }
 
-      window.stopTimer = function () {
-        clearInterval(interval);
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
-        window.location.href = "/";
-      };
+    window.togglePause = function() {
+      isPaused = !isPaused;
+      pauseBtn.textContent = isPaused ? "▶ 재개" : "⏸ 일시정지";
+      applyBackground();
+      if (isPaused) bgMusic.pause();
+      else playBackgroundMusic();
+    };
 
-      startBackgroundRotation();
-      startTimer();
-    });
+    window.stopTimer = function() {
+      clearInterval(interval);
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
+      window.location.href = "/feedback";
+    };
+
+    // 초기 실행
+    startBackgroundRotation();
+    startTimer();
   </script>
 </body>
 </html>

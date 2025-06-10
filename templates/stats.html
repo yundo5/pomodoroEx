@@ -28,6 +28,7 @@
     </div>
 
     <script>
+        // Flask에서 전달받은 stats 데이터를 JSON으로 변환
         // Flask에서 전달받은 통계 데이터
         const dailyFocusChartData = JSON.parse('{{ daily_focus_chart_data | tojson | safe }}');
         const taskTypesChartData = JSON.parse('{{ task_types_chart_data | tojson| safe }}');
