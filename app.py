@@ -28,6 +28,21 @@ def start_session():
     return render_template('timer.html', session=data)
 
 @app.route('/feedback')
+def feedback_session():    
+    data = {}
+    # 기본 테마를 설정 (땅부터 시작)
+    data['theme'] = '땅'
+    
+    recorder.save_task(data)  # 데이터 저장 # 세션 정보를 feedback 페이지로 전달하기 위해 session에 저장하거나,
+    # 간단하게는 URL 파라미터나 숨겨진 필드로 전달할 수 있습니다.
+    # 여기서는 timer.html로 전달한 후, timer.html에서 feedback으로 redirect 시킬 때
+    # 이 데이터를 다시 전달하는 방식(또는 세션에 저장)을 고려해야 합니다.
+    # 간단한 예시를 위해, feedback 페이지에서 session 객체를 다시 로드하는 방식이나
+    # feedback 페이지 자체에서 기록된 가장 최근 세션 정보를 읽어오는 방식이 필요할 수 있습니다.
+    # 현재 피드백 페이지는 session 객체를 직접 받지 않으므로, 이 부분의 로직을 수정해야 합니다.
+    # 임시 방편으로, 가장 최근 기록을 feedback 페이지에서 보여준다고 가정합니다.
+
+    return render_template('timer.html', session=data)  # timer.html로 이동 @app.route('/feedback')
 def feedback_page():
     workMinutes  = request.args.get('workMinutes',  25, type=int)
     breakMinutes = request.args.get('breakMinutes', 5,  type=int)
