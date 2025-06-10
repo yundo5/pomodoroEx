@@ -30,7 +30,7 @@ def start_session():
     return render_template('timer.html', session=data)
 
 @app.route('/feedback')
-    
+def feedback_session():    
     # 기본 테마를 설정 (땅부터 시작)
     data['theme'] = '땅'
     
