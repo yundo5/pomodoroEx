@@ -1,121 +1,144 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title> 도모도로 </title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        /* 배경: 땅-나무7 이미지 */
-        body.bg-start {
-            background-image: url("{{ url_for('static', filename='images/나무/땅/땅-나무7.png') }}");
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8" />
+  <title>도모도로</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+    }
 
-        /* 중앙 시작 버튼 컨테이너 */
-        .start-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+    /* 배경 이미지 */
+    body.bg-start {
+      background-image: url("{{ url_for('static', filename='images/나무/땅/땅-나무1.png') }}");
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      position: relative;
+      font-family: sans-serif;
+    }
 
-        /* 시작 버튼: 흰색 배경, 검정 테두리 */
-       .start-button {
-            width: 100px;
-            height: 40px;
-            background-color: white;
-            color: black;
-            font-size: 16px;
-            border: 2px solid black;
-            border-radius: 5px;
-            cursor: pointer;
+    /* 상단 텍스트 */
+    .start-title {
+      position: absolute;
+      top: 40px;
+      width: 100%;
+      text-align: center;
+      color: white;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+    }
 
-            /* 여기에만 추가! */
-            display: inline-flex;        /* flex 컨테이너로 만들어서 */
-            align-items: center;         /* 세로 중앙 정렬 */
-            justify-content: center;     /* 가로 중앙 정렬 */
-            white-space: nowrap;         /* 줄 바꿈 금지 */
-        }
+    .start-title h1 {
+      font-size: 40pt;
+      font-family: 'Georgia', serif;
+      margin-bottom: 5px;
+    }
 
-        /* 사이드 버튼 (통계/설정): 원형, 흰색 배경 + 검정 테두리 */
-        .side-icons {
-            position: fixed;
-            right: 20px;
-            bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
-        }
+    .start-title p {
+      font-size: 24pt;
+      font-weight: 300;
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+    }
 
-        .icon-button {
-            width: 47px;
-            height: 47px;
-            border-radius: 50%;
-            background-color: white;
-            border: 2px solid black;
-            cursor: pointer;
-            font-weight: bold;
-        }
+    /* 하단 시작 버튼 */
+ .start-button {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 60px;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  background-color: #a14116; /* 이미지와 유사한 갈색 */
+  border: none;
+  border-radius: 999px; /* pill 형태 */
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 2px;
+}
 
-        .settings-canvas {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            background: white;
-            border: 1px solid #ccc;
-            padding: 20px;
-            z-index: 3;
-        }
+    /* 사이드 원형 버튼 */
+    .side-icons {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+    }
 
-        .hidden {
-            display: none;
-        }
-    </style>
+    .icon-button {
+      width: 47px;
+      height: 47px;
+      border-radius: 50%;
+      background-color: white;
+      border: 2px solid black;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .settings-canvas {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 20px;
+      z-index: 3;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body class="bg-start">
-    <!-- 중앙 시작 버튼 -->
-    <div class="start-container">
-        <button onclick="location.href='/session'" class="start-button">시작</button>
-    </div>
+  <!-- 상단 제목 -->
+  <div class="start-title">
+    <h1>도모도로</h1>
+    <p>자람과 길 위에 있는 시간</p>
+  </div>
 
-    <!-- 오른쪽 하단 원형 버튼 -->
-    <div class="side-icons">
-        <button onclick="location.href='/stats'" class="icon-button">통계</button>
-        <button onclick="toggleSettings()" class="icon-button">설정</button>
-    </div>
+  <!-- 하단 시작 버튼 -->
+  <button onclick="location.href='/session'" class="start-button">시작</button>
 
-    <!-- 설정 패널 -->
-    <div id="settings-canvas" class="settings-canvas hidden">
-        <h3>설정</h3>
-        <label>
-            <input type="checkbox" id="alarmToggle" checked>
-            알람 소리 켜기
-        </label>
-        <br><br>
-        <label for="volumeRange">배경음악 볼륨</label><br>
-        <input type="range" id="volumeRange" min="0" max="100" value="50">
-        <br><br>
-        <button onclick="toggleSettings()">닫기</button>
-    </div>
+  <!-- 오른쪽 하단 원형 버튼 -->
+  <div class="side-icons">
+    <button onclick="location.href='/stats'" class="icon-button">통계</button>
+    <button onclick="toggleSettings()" class="icon-button">설정</button>
+  </div>
 
-    <!-- JavaScript -->
-    <script>
-        function toggleSettings() {
-            const canvas = document.getElementById("settings-canvas");
-            canvas.classList.toggle("hidden");
-        }
+  <!-- 설정 패널 -->
+  <div id="settings-canvas" class="settings-canvas hidden">
+    <h3>설정</h3>
+    <label>
+      <input type="checkbox" id="alarmToggle" checked> 알람 소리 켜기
+    </label>
+    <br><br>
+    <label for="volumeRange">배경음악 볼륨</label><br>
+    <input type="range" id="volumeRange" min="0" max="100" value="50">
+    <br><br>
+    <button onclick="toggleSettings()">닫기</button>
+  </div>
 
-        document.getElementById("volumeRange").addEventListener("input", function() {
-            const bgm = document.getElementById("bgMusic");
-            if (bgm) {
-                bgm.volume = this.value / 100;
-            }
-        });
-    </script>
+  <script>
+    function toggleSettings() {
+      const canvas = document.getElementById("settings-canvas");
+      canvas.classList.toggle("hidden");
+    }
+
+    document.getElementById("volumeRange").addEventListener("input", function () {
+      const bgm = document.getElementById("bgMusic");
+      if (bgm) {
+        bgm.volume = this.value / 100;
+      }
+    });
+  </script>
 </body>
 </html>

@@ -5,8 +5,46 @@
     <title>Pomodoro 통계</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
-        .chart-container { width: 80%; margin-bottom: 40px; }
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fdfdfd;
+        }
+        .chart-container {
+            width: 80%;
+            margin-bottom: 40px;
+        }
+       .button-container {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* 중앙 정렬 */
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+.btn-home {
+    padding: 12px 24px;
+    background-color: #6c63ff;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 8px;
+    box-shadow: 0 6px 0 #4b42b3, 0 8px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    position: relative;
+    top: 0;
+}
+
+.btn-home:hover {
+    background-color: #5751d1;
+}
+
+.btn-home:active {
+    top: 3px;
+    box-shadow: 0 3px 0 #4b42b3, 0 4px 10px rgba(0, 0, 0, 0.15);
+}
     </style>
 </head>
 <body>
@@ -27,23 +65,25 @@
         <canvas id="pomodoroSettingsChart"></canvas>
     </div>
 
+    <!-- ✅ 처음으로 버튼 -->
+    <div class="button-container">
+        <a href="/" class="btn-home">처음으로</a>
+    </div>
+
     <script>
-        // Flask에서 전달받은 stats 데이터를 JSON으로 변환
-        // Flask에서 전달받은 통계 데이터
         const dailyFocusChartData = JSON.parse('{{ daily_focus_chart_data | tojson | safe }}');
         const taskTypesChartData = JSON.parse('{{ task_types_chart_data | tojson| safe }}');
         const pomodoroSettingsChartData = JSON.parse('{{ pomodoro_settings_chart_data | tojson | safe }}');
 
-        // 일별 집중도 차트
         const dailyFocusCtx = document.getElementById('dailyFocusChart').getContext('2d');
         new Chart(dailyFocusCtx, {
-            type: 'bar', // 또는 'line'
+            type: 'bar',
             data: {
                 labels: dailyFocusChartData.labels,
                 datasets: dailyFocusChartData.datasets.map(dataset => ({
                     label: dataset.label,
                     data: dataset.data,
-                    backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.5)`, // 임의 색상
+                    backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.5)`,
                     borderColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`,
                     borderWidth: 1
                 }))
@@ -56,7 +96,6 @@
             }
         });
 
-        // 작업 유형 차트 (파이 차트)
         const taskTypesCtx = document.getElementById('taskTypesChart').getContext('2d');
         new Chart(taskTypesCtx, {
             type: 'pie',
@@ -88,7 +127,6 @@
             }
         });
 
-        // 포모도로 세팅 차트 (막대 차트)
         const pomodoroSettingsCtx = document.getElementById('pomodoroSettingsChart').getContext('2d');
         new Chart(pomodoroSettingsCtx, {
             type: 'bar',
