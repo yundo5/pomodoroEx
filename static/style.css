@@ -95,27 +95,30 @@ textarea, input, select {
   gap: 10px;
 }
 
-.start-button-wrapper {
-  width: 100%;
-  text-align: center;
-  margin-top: 30px;
-}
-
 .start-button {
+  display: inline-block;
   padding: 15px 80px;
-  font-size: 20px;
+  font-size: 18px;
   border: none;
   border-radius: 30px;
   background-color: #a14116;
   color: white;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
 .start-button:hover {
-  background-color: #7d2f0f;
+  background-color: #7d2f0f; /* hover 시 더 진한 색상 */
 }
 
+.start-button-wrapper {
+  width: 100%;
+  text-align: center;
+  margin-top: 30px;
+}
 /* ===== 타이머 화면 (timer.html) ===== */
 body.timer-page {
   height: 100vh;

@@ -1,128 +1,158 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>Pomodoro 통계</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
-        .chart-container { width: 80%; margin-bottom: 40px; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Pomodoro 통계</title>
+  <!-- ✅ 외부 CSS 적용 -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #fdfdfd;
+    }
+
+    .chart-container {
+      width: 80%;
+      margin-bottom: 40px;
+    }
+
+    table {
+      width: 100%;
+      text-align: center;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+
+    h2 {
+      margin-top: 40px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Pomodoro 집중 통계</h1>
+  <h1>Pomodoro 집중 통계</h1>
 
-    <div class="chart-container">
+  <!-- 📆 하루 요약 -->
+  <div class="chart-container">
     <h2>📆 달력 기반 하루 요약</h2>
-    <table border="1" style="width:100%; text-align: center;">
-        <thead>
-            <tr>
-                <th>날짜</th>
-                <th>목표 달성</th>
-                <th>집중도</th>
-            </tr>
-        </thead>
-        <tbody id="calendarTableBody"></tbody>
+    <table>
+      <thead>
+        <tr>
+          <th>날짜</th>
+          <th>목표 달성</th>
+          <th>집중도</th>
+        </tr>
+      </thead>
+      <tbody id="calendarTableBody"></tbody>
     </table>
-    </div>  
+  </div>
 
-    
-    <script>
+  <div class="chart-container">
+    <h2>🌿 성장 곡선 (주간 집중력 + 목표 달성률)</h2>
+    <canvas id="growthChartSimple"></canvas>
+  </div>
+
+  <div class="chart-container">
+    <h2>🌟 당신의 집중 유형</h2>
+    <p style="font-size: 1.5rem;"><strong>{{ user_type }}</strong></p>
+    <p>{{ user_desc }}</p>
+  </div>
+
+  <!-- ✅ 처음으로 버튼 (스타일 적용됨) -->
+  <div class="start-button-wrapper"style="margin-bottom: 50px;">
+    <form action="/">
+      <button type="submit" class="start-button">처음으로</button>
+    </form>
+  </div>
+
+  <script>
     const dailySummary = JSON.parse('{{ daily_summary_data | tojson | safe }}');
-
     const tableBody = document.getElementById('calendarTableBody');
+
     Object.entries(dailySummary).forEach(([date, data]) => {
-        const tr = document.createElement('tr');
+      const tr = document.createElement('tr');
+      const goalIcon = data.goal_achievement_rate >= 50 ? "✅" : "❌";
 
-        // 목표 달성률 50% 이상이면 ✅ 아니면 ❌
-        const goalIcon = data.goal_achievement_rate >= 50 ? "✅" : "❌";
+      let focusColor = "gray";
+      if (data.avg_focus_score >= 4.5) focusColor = "green";
+      else if (data.avg_focus_score >= 3.5) focusColor = "lightgreen";
+      else if (data.avg_focus_score >= 2.5) focusColor = "orange";
+      else focusColor = "red";
 
-        // 집중도 평균에 따라 색상
-        let focusColor = "gray";
-        if (data.avg_focus_score >= 4.5) focusColor = "green";
-        else if (data.avg_focus_score >= 3.5) focusColor = "lightgreen";
-        else if (data.avg_focus_score >= 2.5) focusColor = "orange";
-        else focusColor = "red";
-
-        tr.innerHTML = `
-            <td>${date}</td>
-            <td>${goalIcon} (${Math.round(data.goal_achievement_rate)}%)</td>
-            <td style="background-color:${focusColor}">${data.avg_focus_score.toFixed(2)}</td>
-        `;
-        tableBody.appendChild(tr);
+      tr.innerHTML = `
+        <td>${date}</td>
+        <td>${goalIcon} (${Math.round(data.goal_achievement_rate)}%)</td>
+        <td style="background-color:${focusColor}">${data.avg_focus_score.toFixed(2)}</td>
+      `;
+      tableBody.appendChild(tr);
     });
-    </script>
+  </script>
 
-    <div class="chart-container">
-        <h2>🌿 성장 곡선 (주간 집중력 + 목표 달성률)</h2>
-        <canvas id="growthChartSimple"></canvas>
-    </div>
+  <script>
+    const weeklyGrowth = JSON.parse('{{ weekly_growth_data | tojson | safe }}');
+    const weekLabels = Object.keys(weeklyGrowth).sort();
+    const focusValues = weekLabels.map(w => weeklyGrowth[w].avg_focus);
+    const goalValues = weekLabels.map(w => weeklyGrowth[w].goal_rate);
 
-    <script>
-        const weeklyGrowth = JSON.parse('{{ weekly_growth_data | tojson | safe }}');
-        const weekLabels = Object.keys(weeklyGrowth).sort();
-        const focusValues = weekLabels.map(w => weeklyGrowth[w].avg_focus);
-        const goalValues = weekLabels.map(w => weeklyGrowth[w].goal_rate);
-
-        const ctxGrowth = document.getElementById('growthChartSimple').getContext('2d');
-        new Chart(ctxGrowth, {
-            type: 'line',
-            data: {
-                labels: weekLabels,
-                datasets: [
-                    {
-                        label: '📈 평균 집중도 (1~5)',
-                        data: focusValues,
-                        borderColor: 'green',
-                        backgroundColor: 'rgba(0,128,0,0.1)',
-                        yAxisID: 'y1',
-                        fill: false,
-                        tension: 0.3
-                    },
-                    {
-                        label: '🎯 목표 달성률 (%)',
-                        data: goalValues,
-                        borderColor: 'orange',
-                        backgroundColor: 'rgba(255,165,0,0.1)',
-                        yAxisID: 'y2',
-                        fill: false,
-                        tension: 0.3
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
-                stacked: false,
-                scales: {
-                    y1: {
-                        type: 'linear',
-                        position: 'left',
-                        min: 0,
-                        max: 5,
-                        title: { display: true, text: '평균 집중도' }
-                    },
-                    y2: {
-                        type: 'linear',
-                        position: 'right',
-                        min: 0,
-                        max: 100,
-                        title: { display: true, text: '목표 달성률 (%)' },
-                        grid: { drawOnChartArea: false }
-                    }
-                }
-            }
-        });
-    </script>
-
-
-    <div class="chart-container">
-        <h2>🌟 당신의 집중 유형</h2>
-        <p style="font-size: 1.5rem;"><strong>{{ user_type }}</strong></p>
-        <p>{{ user_desc }}</p>
-    </div>
+    const ctxGrowth = document.getElementById('growthChartSimple').getContext('2d');
+    new Chart(ctxGrowth, {
+      type: 'line',
+      data: {
+        labels: weekLabels,
+        datasets: [
+          {
+            label: '📈 평균 집중도 (1~5)',
+            data: focusValues,
+            borderColor: 'green',
+            backgroundColor: 'rgba(0,128,0,0.1)',
+            yAxisID: 'y1',
+            fill: false,
+            tension: 0.3
+          },
+          {
+            label: '🎯 목표 달성률 (%)',
+            data: goalValues,
+            borderColor: 'orange',
+            backgroundColor: 'rgba(255,165,0,0.1)',
+            yAxisID: 'y2',
+            fill: false,
+            tension: 0.3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        stacked: false,
+        scales: {
+          y1: {
+            type: 'linear',
+            position: 'left',
+            min: 0,
+            max: 5,
+            title: { display: true, text: '평균 집중도' }
+          },
+          y2: {
+            type: 'linear',
+            position: 'right',
+            min: 0,
+            max: 100,
+            title: { display: true, text: '목표 달성률 (%)' },
+            grid: { drawOnChartArea: false }
+          }
+        }
+      }
+    });
+  </script>
 </body>
 </html>

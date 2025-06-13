@@ -20,7 +20,6 @@
       background-image: none !important;
       background-color: rgba(255, 0, 0, 0.3) !important;
     }
-    /* 아이콘 위치 조정 */
     #modeIcon {
       font-size: 1.2rem;
       margin: 0 16px;
@@ -57,7 +56,6 @@
         </span>
       </div>
 
-      <!-- + 버튼과 일시정지 버튼 사이에 아이콘 배치 -->
       <span id="modeIcon">☀️</span>
 
       <div class="control-buttons">
@@ -70,40 +68,39 @@
   <audio id="bgMusic" loop></audio>
 
   <script>
-    const selectedMusic  = "{{ session.get('bgm', 'off') }}";
-    const workMinutes    = parseInt("{{ session['workMinutes'] }}");
-    const breakMinutes   = parseInt("{{ session['breakMinutes'] }}");
-    let maxpomocount     = parseInt("{{ session['repeatCount'] }}") || 1;
-    let pomocount        = 1;
+    const selectedMusic = "{{ session.get('bgm', 'off') }}";
+    const workMinutes = parseInt("{{ session['workMinutes'] }}");
+    const breakMinutes = parseInt("{{ session['breakMinutes'] }}");
+    let maxpomocount = parseInt("{{ session['repeatCount'] }}") || 1;
+    let pomocount = 1;
 
-    let isBreak               = false;
-    let isPaused              = false;
-    let interval              = null;
-    let seconds               = workMinutes * 60;
-    let bgIndex               = 1;
-    let currentThemeIndex     = 0;
-    const themes              = ["땅","산","하늘","성층권","우주"];
-    const totalImages         = 12;
-    let currentTheme          = themes[currentThemeIndex];
-    let backgroundAnimationOff= false;
+    let isBreak = false;
+    let isPaused = false;
+    let interval = null;
+    let seconds = workMinutes * 60;
+    let bgIndex = 1;
+    let currentThemeIndex = 0;
+    const themes = ["땅", "산", "하늘", "성치군", "우주"];
+    const totalImages = 12;
+    let currentTheme = themes[currentThemeIndex];
+    let backgroundAnimationOff = false;
+    let lastImagePath = ""; // 일시정지 전 이미지 경로
 
-    const display              = document.getElementById("timerDisplay");
-    const pauseBtn             = document.getElementById("pauseBtn");
-    const stopBtn              = document.getElementById("stopBtn");
-    const bodyElem             = document.getElementById("main-body");
-    const bgToggle             = document.getElementById("bgToggle");
-    const bgMusic              = document.getElementById("bgMusic");
-    const volumeRange          = document.getElementById("volumeRange");
-    const repeatDisplay        = document.getElementById("repeatCountDisplay");
-    const currentCountDisplay  = document.getElementById("currentCountDisplay");
-    const plusBtn              = document.getElementById("plusRepeat");
-    const minusBtn             = document.getElementById("minusRepeat");
-    const modeIcon             = document.getElementById("modeIcon");
+    const display = document.getElementById("timerDisplay");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const bodyElem = document.getElementById("main-body");
+    const bgToggle = document.getElementById("bgToggle");
+    const bgMusic = document.getElementById("bgMusic");
+    const volumeRange = document.getElementById("volumeRange");
+    const repeatDisplay = document.getElementById("repeatCountDisplay");
+    const currentCountDisplay = document.getElementById("currentCountDisplay");
+    const plusBtn = document.getElementById("plusRepeat");
+    const minusBtn = document.getElementById("minusRepeat");
+    const modeIcon = document.getElementById("modeIcon");
 
-    // 초기 표시
-    repeatDisplay.textContent       = maxpomocount;
+    repeatDisplay.textContent = maxpomocount;
     currentCountDisplay.textContent = `현재 반복횟수: ${pomocount}`;
-    pauseBtn.textContent            = "⏸ 일시정지";
 
     plusBtn.addEventListener("click", () => {
       maxpomocount++;
@@ -140,13 +137,13 @@
         bodyElem.style.backgroundImage = `url('${src}')`;
       };
       img.onerror = () => {
-    console.error("이미지 로드 실패:", src);
-    // 오류 페이지로 이동하면서 메시지 전달
-    const errorMsg = encodeURIComponent("이미지가 없거나 이름이 잘못되었습니다.");
-    window.location.href = `/error?message=${errorMsg}`;
-  };
+        console.error("이미지 로드 실패:", src);
+        const errorMsg = encodeURIComponent("이미지가 없거나 이름이 잘못되었습니다.");
+        window.location.href = `/error?message=${errorMsg}`;
+      };
       img.src = src;
     }
+
     function changeBackground() {
       if (backgroundAnimationOff) return;
       const path = isBreak
@@ -154,6 +151,7 @@
         : `/static/images/나무/${currentTheme}/${currentTheme}-나무${bgIndex}.png`;
       preloadAndSetBackground(path);
       if (!isBreak) {
+        lastImagePath = path; // 저장
         bgIndex++;
         if (bgIndex > totalImages) {
           bgIndex = 1;
@@ -164,15 +162,15 @@
     }
 
     function applyBackground() {
+      if (isPaused) return;
       bodyElem.classList.remove('focus-gradient','break-solid');
       bodyElem.style.backgroundImage = 'none';
       if (backgroundAnimationOff) {
-        if (isBreak)      bodyElem.classList.add('break-solid');
-        else              bodyElem.classList.add('focus-gradient');
+        if (isBreak) bodyElem.classList.add('break-solid');
+        else bodyElem.classList.add('focus-gradient');
       } else {
         changeBackground();
       }
-      // 모드 아이콘 업데이트
       modeIcon.textContent = isBreak ? '🌕' : '☀️';
     }
 
@@ -202,13 +200,11 @@
           updateDisplay();
         } else {
           if (!isBreak) {
-            // 집중 → 휴식
             isBreak = true;
             seconds = breakMinutes * 60;
             applyBackground();
             updateDisplay();
           } else {
-            // 휴식 종료 시 → 비교 먼저
             const qs = new URLSearchParams({
               workMinutes, breakMinutes,
               repeatCount: maxpomocount,
@@ -217,13 +213,11 @@
             }).toString();
 
             if (pomocount >= maxpomocount) {
-              // 모든 반복 완료 → 피드백
               clearInterval(interval);
               bgMusic.pause();
               bgMusic.currentTime = 0;
               window.location.href = "/feedback?" + qs;
             } else {
-              // 아직 반복 남음 → 카운트 증가 후 다음 집중
               pomocount++;
               currentCountDisplay.textContent = `현재 반복횟수: ${pomocount}`;
               isBreak = false;
@@ -238,10 +232,22 @@
 
     function togglePause() {
       isPaused = !isPaused;
-      pauseBtn.textContent = isPaused ? "▶ 재개" : "⏸ 일시정지";
-      if (isPaused) bgMusic.pause();
-      else          bgMusic.play().catch(() => {});
-      applyBackground();
+      if (isPaused) {
+        pauseBtn.innerHTML = "▶ 재개";
+        bgMusic.pause();
+        const pauseImage = `/static/images/나무/${currentTheme}/${currentTheme}-휴식시간.png`;
+        preloadAndSetBackground(pauseImage);
+        modeIcon.textContent = '🌕';
+      } else {
+        pauseBtn.innerHTML = "⏸ 일시정지";
+        bgMusic.play().catch(() => {});
+        if (lastImagePath) {
+          preloadAndSetBackground(lastImagePath);
+        } else {
+          applyBackground();
+        }
+        modeIcon.textContent = isBreak ? '🌕' : '☀️';
+      }
     }
 
     function stopTimer() {
