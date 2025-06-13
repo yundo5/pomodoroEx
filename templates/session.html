@@ -15,8 +15,19 @@
 
     <form method="post" action="/start">
         <div class="session-wrapper">
-            <!-- 왼쪽 질문 영역 -->
             <div class="left-box">
+                <div class="form-group">
+                    <label for="task_category">0. 목표 상위 카테고리</label>
+                    <select name="task_category" id="task_category" style="width: 160px;" required>
+                        <option value="" {% if task_category == '' %}selected{% endif %}>선택하세요</option>
+                        <option value="공부/이해" {% if task_category == '공부/이해' %}selected{% endif %}>🧠 공부/이해</option>
+                        <option value="생산/작성" {% if task_category == '생산/작성' %}selected{% endif %}>✍️ 생산/작성</option>
+                        <option value="읽기/자료 습득" {% if task_category == '읽기/자료 습득' %}selected{% endif %}>📚 읽기/자료 습득</option>
+                        <option value="정리/관리" {% if task_category == '정리/관리' %}selected{% endif %}>🧹 정리/관리</option>
+                        <option value="기획/설계" {% if task_category == '기획/설계' %}selected{% endif %}>🎯 기획/설계</option>
+                    </select>
+                </div>
+                
                 <div class="form-group">
                     <label for="task">1. 이번 뽀모도로 세션에서 집중할 핵심 작업은 무엇인가요?</label>
                     <textarea name="task" id="task" rows="2" required>{{ task or '' }}</textarea>
@@ -33,7 +44,6 @@
                 </div>
             </div>
 
-            <!-- 오른쪽 설정 영역 -->
             <div class="right-box">
                 <div class="form-group">
                     <label for="workMinutes">집중 시간</label>
@@ -74,7 +84,6 @@
             </div>
         </div>
 
-        <!-- 버튼 영역 -->
         <div class="start-button-wrapper">
             <button type="submit" class="start-button">START</button>
         </div>
