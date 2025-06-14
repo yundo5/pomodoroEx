@@ -4,6 +4,124 @@
     <meta charset="UTF-8">
     <title>Pomodoro 세션 설정</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* 새로운 제안 박스를 위한 스타일 */
+        .suggestion-box {
+            background-color: #f0f8ff; /* 연한 하늘색 배경 */
+            border: 1px solid #cceeff; /* 연한 파란색 테두리 */
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-top: 20px;
+            margin-bottom: 30px; /* START 버튼 위 공간 확보 */
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .suggestion-box p {
+            margin: 5px 0;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .suggestion-box strong {
+            color: #007bff; /* 파란색 강조 */
+        }
+        .suggestion-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #0056b3;
+            margin-bottom: 10px;
+        }
+
+        /* 변경된 레이아웃 스타일 */
+        .session-wrapper {
+            display: flex;
+            flex-direction: column; /* 전체 요소를 세로로 정렬 */
+            gap: 20px; /* 각 섹션 간의 간격 */
+            width: 90%;
+            max-width: 600px; /* 폼 너비 제한 */
+            margin: 50px auto; /* 중앙 정렬 */
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .left-box, .right-box {
+            display: flex;
+            flex-direction: column; /* 기본은 세로 정렬 */
+            gap: 20px; /* 그룹 간 간격 */
+        }
+
+        /* 0. 목표 상위 카테고리 - 라디오 버튼 그룹을 한 줄로 */
+        .category-radio-group {
+            display: flex;
+            flex-wrap: wrap; /* 내용이 넘치면 다음 줄로 */
+            gap: 15px; /* 라디오 버튼 간 간격 */
+            justify-content: center; /* 가운데 정렬 (선택 사항) */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .category-radio-group label {
+            display: flex;
+            align-items: center;
+            white-space: nowrap; /* 줄바꿈 방지 */
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .category-radio-group label:hover {
+            background-color: #e0e0e0;
+        }
+        .category-radio-group input[type="radio"] {
+            margin-right: 8px;
+            transform: scale(1.2); /* 라디오 버튼 크기 조절 */
+        }
+
+        /* 집중 시간, 휴식 시간, 반복 횟수를 한 줄로 */
+        .pomodoro-settings-row {
+            display: flex;
+            flex-wrap: wrap; /* 화면이 작아지면 줄바꿈 */
+            gap: 15px; /* 설정 항목 간 간격 */
+            justify-content: space-around; /* 항목들을 균등하게 분배 */
+            align-items: flex-end; /* 항목들을 하단에 정렬 */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .pomodoro-settings-row .form-group {
+            flex: 1; /* 공간을 균등하게 분배 */
+            min-width: 100px; /* 최소 너비 */
+            max-width: 150px; /* 최대 너비 */
+            text-align: center;
+        }
+        .pomodoro-settings-row select {
+            width: 100%; /* 부모에 맞춰 너비 조절 */
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .pomodoro-settings-row label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block; /* 라벨이 한 줄 전체를 차지하도록 */
+        }
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+            box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+            resize: vertical; /* 세로 방향으로만 크기 조절 가능 */
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body class="bg-session">
 
@@ -15,78 +133,198 @@
 
     <form method="post" action="/start">
         <div class="session-wrapper">
-            <div class="left-box">
-                <div class="form-group">
-                    <label for="task_category">0. 목표 상위 카테고리</label>
-                    <select name="task_category" id="task_category" style="width: 160px;" required>
-                        <option value="" {% if task_category == '' %}selected{% endif %}>선택하세요</option>
-                        <option value="공부/이해" {% if task_category == '공부/이해' %}selected{% endif %}>🧠 공부/이해</option>
-                        <option value="생산/작성" {% if task_category == '생산/작성' %}selected{% endif %}>✍️ 생산/작성</option>
-                        <option value="읽기/자료 습득" {% if task_category == '읽기/자료 습득' %}selected{% endif %}>📚 읽기/자료 습득</option>
-                        <option value="정리/관리" {% if task_category == '정리/관리' %}selected{% endif %}>🧹 정리/관리</option>
-                        <option value="기획/설계" {% if task_category == '기획/설계' %}selected{% endif %}>🎯 기획/설계</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="task">1. 이번 뽀모도로 세션에서 집중할 핵심 작업은 무엇인가요?</label>
-                    <textarea name="task" id="task" rows="2" required>{{ task or '' }}</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="goal">2. 이 작업이 완료 되었을 때 어떤 결과물을 원하나요?</label>
-                    <textarea name="goal" id="goal" rows="2" required>{{ goal or '' }}</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="focusUnits">3. 예상되는 집중 시간(뽀모도로 단위)을 적어보세요</label>
-                    <input type="number" name="focusUnits" id="focusUnits" min="1" max="10" required>
+            {# 목표 상위 카테고리 #}
+            <div class="form-group">
+                <label>0. 목표 상위 카테고리</label>
+                <div class="category-radio-group" id="task_category_radios"> {# id를 div로 이동하여 라디오 버튼 그룹 전체를 대표 #}
+                    <label><input type="radio" name="task_category" value="공부/이해" {% if task_category == '공부/이해' %}checked{% endif %} required> 🧠 공부/이해</label>
+                    <label><input type="radio" name="task_category" value="생산/작성" {% if task_category == '생산/작성' %}checked{% endif %} required> ✍️ 생산/작성</label>
+                    <label><input type="radio" name="task_category" value="읽기/자료 습득" {% if task_category == '읽기/자료 습득' %}checked{% endif %} required> 📚 읽기/자료 습득</label>
+                    <label><input type="radio" name="task_category" value="정리/관리" {% if task_category == '정리/관리' %}checked{% endif %} required> 🧹 정리/관리</label>
+                    <label><input type="radio" name="task_category" value="기획/설계" {% if task_category == '기획/설계' %}checked{% endif %} required> 🎯 기획/설계</label>
+                    <label><input type="radio" name="task_category" value="미분류" {% if task_category == '미분류' or task_category == '' %}checked{% endif %} required> 📁 미분류</label>
                 </div>
             </div>
+            
+            {# 이번 작업의 핵심 목표는 무엇인가요? #}
+            <div class="form-group">
+                <label for="task">1. 이번 작업의 핵심 목표는 무엇인가요?</label> {# 라벨 텍스트 변경 #}
+                <textarea name="task" id="task" rows="2" required>{{ task or '' }}</textarea>
+            </div>
 
-            <div class="right-box">
+            {# 2번, 3번 항목은 제거되었음 #}
+            {# focusUnits 값은 hidden input으로 유지하여 서버로 전송 (recorder.py 호환성) #}
+            <input type="hidden" name="focusUnits" id="focusUnits" value="1"> {# 기본값 1로 고정 #}
+
+            {# 포모도로 시간 설정 #}
+            <label style="font-weight: bold; font-size: 1.1em; margin-bottom: 10px;">포모도로 시간 설정</label>
+            <div class="pomodoro-settings-row"> {# 새로운 Flexbox 컨테이너 #}
                 <div class="form-group">
                     <label for="workMinutes">집중 시간</label>
-                    <select name="workMinutes" id="workMinutes" style="width: 160px;" required>
+                    <select name="workMinutes" id="workMinutes" required>
                         {% for i in range(5, 60, 5) %}
-                        <option value="{{ i }}">{{ i }}분</option>
+                        <option value="{{ i }}" {% if i == 25 %}selected{% endif %}>{{ i }}분</option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="breakMinutes">휴식 시간</label>
-                    <select name="breakMinutes" id="breakMinutes" style="width: 160px;" required>
+                    <select name="breakMinutes" id="breakMinutes" required>
                         {% for i in range(1, 11) %}
-                        <option value="{{ i }}">{{ i }}분</option>
+                        <option value="{{ i }}" {% if i == 5 %}selected{% endif %}>{{ i }}분</option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="repeatCount">반복 횟수</label>
-                    <select name="repeatCount" id="repeatCount" style="width: 160px;" required>
+                    <select name="repeatCount" id="repeatCount" required>
                         {% for i in range(1, 6) %}
-                        <option value="{{ i }}">{{ i }}회</option>
+                        <option value="{{ i }}" {% if i == 1 %}selected{% endif %}>{{ i }}회</option>
                         {% endfor %}
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="bgmSelect">배경 음악</label>
-                    <select name="bgm" id="bgmSelect" style="width: 160px;">
-                        <option value="off" {% if bgm == 'off' %}selected{% endif %}>Off</option>
-                        <option value="rain.mp3" {% if bgm == 'rain.mp3' %}selected{% endif %}>Rain</option>
-                        <option value="ocean.mp3" {% if bgm == 'ocean.mp3' %}selected{% endif %}>Ocean</option>
-                        <option value="heater.mp3" {% if bgm == 'heater.mp3' %}selected{% endif %}>Heater</option>
-                    </select>
-                </div>
             </div>
+
+            {# 배경 음악 #}
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="bgmSelect">배경 음악</label>
+                <select name="bgm" id="bgmSelect" style="width: 160px;">
+                    <option value="off" {% if bgm == 'off' %}selected{% endif %}>Off</option>
+                    <option value="rain.mp3" {% if bgm == 'rain.mp3' %}selected{% endif %}>Rain</option>
+                    <option value="ocean.mp3" {% if bgm == 'ocean.mp3' %}selected{% endif %}>Ocean</option>
+                    <option value="heater.mp3" {% if bgm == 'heater.mp3' %}selected{% endif %}>Heater</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 새로 추가된 제안 표시 영역 -->
+        <div class="suggestion-box" id="pomodoroSuggestion">
+            <p class="suggestion-header">💡 과거 기록 기반 포모도로 설정 제안</p>
+            <p id="suggestionContent">새로운 뽀모도로 세션을 위한 최적의 설정을 찾아보세요! <br>카테고리와 작업명을 입력하면 과거 기록 기반 제안을 받을 수 있습니다. ✨</p>
         </div>
 
         <div class="start-button-wrapper">
             <button type="submit" class="start-button">START</button>
         </div>
     </form>
+
+    <script>
+        const taskCategoryRadios = document.querySelectorAll('input[name="task_category"]');
+        const taskTextarea = document.getElementById('task');
+        const workMinutesSelect = document.getElementById('workMinutes');
+        const breakMinutesSelect = document.getElementById('breakMinutes');
+        const repeatCountSelect = document.getElementById('repeatCount');
+        const focusUnitsInput = document.getElementById('focusUnits');
+        const suggestionContent = document.getElementById('suggestionContent');
+
+        let debounceTimer;
+
+        // 제안을 가져오는 함수
+        async function fetchSuggestions() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+                const category = document.querySelector('input[name="task_category"]:checked')?.value || '';
+                const task = taskTextarea.value.trim();
+
+                if (!category || !task) { 
+                    suggestionContent.innerHTML = '새로운 뽀모도로 세션을 위한 최적의 설정을 찾아보세요! <br>카테고리와 작업명을 입력하면 과거 기록 기반 제안을 받을 수 있습니다. ✨';
+                    return;
+                }
+
+                try {
+                    suggestionContent.innerHTML = '제안을 생성 중입니다...';
+                    
+                    const response = await fetch(`/api/suggest_pomodoro?category=${encodeURIComponent(category)}&task=${encodeURIComponent(task)}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+
+                    const suggestions = data.suggestions;
+                    const status = data.status;
+                    const reason = data.reason || ''; 
+
+                    let messageHtml = '';
+                    if (status === "openai_success") {
+                        messageHtml = `
+                            이전 세션들을 보니, 이 작업에는 다음과 같은 설정이 <strong>적절합니다</strong>:<br>
+                            <strong>집중 시간: ${suggestions.workMinutes}분</strong>,
+                            <strong>휴식 시간: ${suggestions.breakMinutes}분</strong>,
+                            <strong>반복 횟수: ${suggestions.repeatCount}회</strong><br>
+                            <small>${reason}</small>
+                        `;
+                    } else if (status === "invalid_input" || status === "openai_fallback_low_records") {
+                        messageHtml = `
+                            <span style="color:orange; font-weight:bold;">${reason}</span><br>
+                            <strong>집중 시간: ${suggestions.workMinutes}분</strong>,
+                            <strong>휴식 시간: ${suggestions.breakMinutes}분</strong>,
+                            <strong>반복 횟수: ${suggestions.repeatCount}회</strong><br>
+                        `;
+                    }
+                    else if (status === "openai_fallback" || status === "openai_error" || status === "openai_api_error") {
+                        messageHtml = `
+                            아직 이 작업에 대한 충분한 기록이 없거나, 인공지능이 분석하기 어려워 일반적인 추천 설정을 제안합니다.<br>
+                            세션 기록이 쌓일수록 더욱 정교한 맞춤 제안을 받을 수 있어요! 💡<br>
+                            <strong>집중 시간: ${suggestions.workMinutes}분</strong>,
+                            <strong>휴식 시간: ${suggestions.breakMinutes}분</strong>,
+                            <strong>반복 횟수: ${suggestions.repeatCount}회</strong><br>
+                            <small>${reason}</small>
+                        `;
+                    } else if (status === "api_key_missing") {
+                         messageHtml = `
+                            <span style="color:red; font-weight:bold;">오류: OpenAI API 키가 설정되지 않았습니다.</span><br>
+                            <small>${reason}</small>
+                         `;
+                    }
+                    
+                    suggestionContent.innerHTML = messageHtml;
+
+                    workMinutesSelect.value = suggestions.workMinutes;
+                    breakMinutesSelect.value = suggestions.breakMinutes;
+                    repeatCountSelect.value = suggestions.repeatCount;
+                    focusUnitsInput.value = suggestions.focusUnits;
+
+                } catch (error) {
+                    console.error('Failed to fetch suggestions:', error);
+                    suggestionContent.innerHTML = '제안을 가져오는 데 실패했습니다. (네트워크 오류 또는 서버 응답 문제)';
+                }
+            }, 500); // 0.5초 디바운스
+        }
+
+        taskCategoryRadios.forEach(radio => {
+            radio.addEventListener('change', fetchSuggestions);
+        });
+        taskTextarea.addEventListener('input', fetchSuggestions);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialCategory = document.querySelector('input[name="task_category"]:checked')?.value || '';
+            const initialTask = taskTextarea.value.trim();
+            
+            if (initialCategory && initialTask) {
+                fetchSuggestions();
+            } else {
+                suggestionContent.innerHTML = '새로운 뽀모도로 세션을 위한 최적의 설정을 찾아보세요! <br>카테고리와 작업명을 입력하면 과거 기록 기반 제안을 받을 수 있습니다. ✨';
+            }
+
+            const lastBgm = "{{ bgm }}";
+            const bgmSelect = document.getElementById('bgmSelect');
+            if (lastBgm && bgmSelect) {
+                bgmSelect.value = lastBgm;
+            }
+
+            const initialTaskCategory = "{{ task_category }}";
+            if (initialTaskCategory) {
+                const initialCategoryRadio = document.querySelector(`input[name="task_category"][value="${initialTaskCategory}"]`);
+                if (initialCategoryRadio) {
+                    initialCategoryRadio.checked = true;
+                }
+            } else {
+                document.querySelector('input[name="task_category"][value="미분류"]').checked = true;
+            }
+        });
+
+    </script>
 </body>
 </html>

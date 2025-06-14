@@ -13,31 +13,113 @@
       flex-direction: column;
       align-items: center;
       background-color: #fdfdfd;
+      padding: 10px; /* 전체 페이지 패딩을 줄임 */
+      margin: 0; /* body 기본 마진 제거 */
+    }
+
+    h1 {
+      margin-bottom: 20px; /* 제목 하단 마진 줄임 */
+      color: #333;
+      font-size: 2.2em; /* 제목 크기 조정 */
     }
 
     .chart-container {
-      width: 80%;
-      margin-bottom: 40px;
+      width: 95%; /* 너비를 조금 늘림 */
+      max-width: 700px; /* 최대 너비 설정 */
+      margin-bottom: 20px; /* 컨테이너 하단 마진 줄임 */
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 그림자 약하게 */
+      padding: 15px 20px; /* 내부 패딩 줄임 */
+      
+      height: auto; /* 높이를 자동으로 조절 */
+      min-height: 150px; /* 최소 높이 설정 (내용에 따라 늘어남) */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box; /* 패딩이 너비/높이에 포함되도록 */
+    }
+    
+    canvas {
+        width: 100% !important;
+        height: 300px !important; /* 그래프 캔버스의 고정 높이 */
+        max-height: 300px; /* 최대 높이 설정 */
+    }
+
+
+    .chart-container h2 {
+      margin-top: 10px; /* 제목 상단 마진 줄임 */
+      margin-bottom: 15px; /* 제목 하단 마진 줄임 */
+      color: #555;
+      text-align: center;
+      font-size: 1.5em; /* 부제목 크기 조정 */
     }
 
     table {
       width: 100%;
       text-align: center;
       border-collapse: collapse;
+      margin-top: 10px; /* 테이블 상단 마진 줄임 */
+      font-size: 0.9em; /* 테이블 텍스트 크기 줄임 */
     }
 
     th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
+      border: 1px solid #e9e9e9; /* 테두리 더 연하게 */
+      padding: 8px; /* 테이블 셀 패딩 줄임 */
     }
 
-    h2 {
-      margin-top: 40px;
+    th {
+      background-color: #f9f9f9;
+      font-weight: bold;
+      color: #333;
+    }
+
+    td {
+      background-color: #ffffff;
+    }
+
+    /* "데이터 없음" 메시지 스타일 */
+    .no-data-message {
+        color: #888;
+        font-style: italic;
+        text-align: center;
+        padding: 15px 0; /* 패딩 줄임 */
+        font-size: 0.9em;
+    }
+
+    /* 사용자 집중 유형 텍스트 크기 조정 */
+    .chart-container p {
+        font-size: 0.95em;
+        margin: 5px 0; /* 마진 줄임 */
+    }
+    .chart-container p strong {
+        font-size: 1.3em; /* 유형 이름 크기 조정 */
+    }
+
+    /* 처음으로 버튼 래퍼 마진 줄임 */
+    .start-button-wrapper {
+        margin-top: 20px; /* 마진 줄임 */
+        margin-bottom: 20px; /* 마진 줄임 */
     }
   </style>
 </head>
 <body>
   <h1>Pomodoro 집중 통계</h1>
+
+  <!-- 🌟 당신의 집중 유형 -->
+  <div class="chart-container">
+    <h2>🌟 당신의 집중 유형</h2>
+    {% if user_type == "데이터 부족" %}
+      <p class="no-data-message">
+        아직 당신의 고유한 집중 패턴을 분석하기엔 데이터가 부족해요. <br>
+        포모도로 세션을 꾸준히 기록하며 당신만의 학습/작업 스타일을 찾아보세요! 🚀
+      </p>
+    {% else %}
+      <p style="font-size: 1.5rem;"><strong>{{ user_type }}</strong></p>
+      <p>{{ user_desc }}</p>
+    {% endif %}
+  </div>
 
   <!-- 📆 하루 요약 -->
   <div class="chart-container">
@@ -46,8 +128,8 @@
       <thead>
         <tr>
           <th>날짜</th>
-          <th>목표 달성</th>
-          <th>집중도</th>
+          <th>목표 달성률</th>
+          <th>평균 집중도</th>
         </tr>
       </thead>
       <tbody id="calendarTableBody"></tbody>
@@ -55,104 +137,125 @@
   </div>
 
   <div class="chart-container">
-    <h2>🌿 성장 곡선 (주간 집중력 + 목표 달성률)</h2>
+    <h2>🌿 성장 곡선 (일별 집중력 + 목표 달성률)</h2>
     <canvas id="growthChartSimple"></canvas>
   </div>
 
-  <div class="chart-container">
-    <h2>🌟 당신의 집중 유형</h2>
-    <p style="font-size: 1.5rem;"><strong>{{ user_type }}</strong></p>
-    <p>{{ user_desc }}</p>
-  </div>
-
-  <!-- ✅ 처음으로 버튼 (스타일 적용됨) -->
-  <div class="start-button-wrapper"style="margin-bottom: 50px;">
+  <!-- ✅ 처음으로 버튼 -->
+  <div class="start-button-wrapper">
     <form action="/">
       <button type="submit" class="start-button">처음으로</button>
     </form>
   </div>
 
   <script>
+    // 일별 요약 테이블을 위한 스크립트
     const dailySummary = JSON.parse('{{ daily_summary_data | tojson | safe }}');
     const tableBody = document.getElementById('calendarTableBody');
 
-    Object.entries(dailySummary).forEach(([date, data]) => {
-      const tr = document.createElement('tr');
-      const goalIcon = data.goal_achievement_rate >= 50 ? "✅" : "❌";
+    if (Object.keys(dailySummary).length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="3" class="no-data-message">' +
+        "아직 세션 기록이 없네요. '시작' 버튼을 눌러 첫 뽀모도로 세션을 시작하고 기록해보세요! ✍️" +
+        '</td></tr>';
+    } else {
+      Object.entries(dailySummary).forEach(([date, data]) => {
+        const tr = document.createElement('tr');
+        const goalIcon = data.goal_rate >= 50 ? "✅" : "❌"; // 50% 이상이면 달성으로 표시
 
-      let focusColor = "gray";
-      if (data.avg_focus_score >= 4.5) focusColor = "green";
-      else if (data.avg_focus_score >= 3.5) focusColor = "lightgreen";
-      else if (data.avg_focus_score >= 2.5) focusColor = "orange";
-      else focusColor = "red";
-
-      tr.innerHTML = `
-        <td>${date}</td>
-        <td>${goalIcon} (${Math.round(data.goal_achievement_rate)}%)</td>
-        <td style="background-color:${focusColor}">${data.avg_focus_score.toFixed(2)}</td>
-      `;
-      tableBody.appendChild(tr);
-    });
+        let focusColor = "transparent"; // 기본 배경색
+        if (data.avg_focus_score >= 4.5) focusColor = "#d4edda"; // Greenish
+        else if (data.avg_focus_score >= 3.5) focusColor = "#fff3cd"; // Yellowish
+        else if (data.avg_focus_score >= 2.5) focusColor = "#ffeeba"; // Orangeish
+        else if (data.avg_focus_score > 0) focusColor = "#f8d7da"; // Reddish (데이터가 0이 아닐 때만 색상 적용)
+        
+        tr.innerHTML = `
+          <td>${date}</td>
+          <td>${goalIcon} (${Math.round(data.goal_rate)}%)</td>
+          <td style="background-color:${focusColor}">${data.avg_focus_score.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
   </script>
 
   <script>
-    const weeklyGrowth = JSON.parse('{{ weekly_growth_data | tojson | safe }}');
-    const weekLabels = Object.keys(weeklyGrowth).sort();
-    const focusValues = weekLabels.map(w => weeklyGrowth[w].avg_focus);
-    const goalValues = weekLabels.map(w => weeklyGrowth[w].goal_rate);
+    // 성장 곡선 (일별)
+    const dailyGrowthData = JSON.parse('{{ daily_summary_data | tojson | safe }}');
+    const dateLabels = Object.keys(dailyGrowthData).sort();
+
+    const focusValuesDaily = dateLabels.map(d => dailyGrowthData[d].avg_focus_score);
+    const goalValuesDaily = dateLabels.map(d => dailyGrowthData[d].goal_rate);
 
     const ctxGrowth = document.getElementById('growthChartSimple').getContext('2d');
-    new Chart(ctxGrowth, {
-      type: 'line',
-      data: {
-        labels: weekLabels,
-        datasets: [
-          {
-            label: '📈 평균 집중도 (1~5)',
-            data: focusValues,
-            borderColor: 'green',
-            backgroundColor: 'rgba(0,128,0,0.1)',
-            yAxisID: 'y1',
-            fill: false,
-            tension: 0.3
-          },
-          {
-            label: '🎯 목표 달성률 (%)',
-            data: goalValues,
-            borderColor: 'orange',
-            backgroundColor: 'rgba(255,165,0,0.1)',
-            yAxisID: 'y2',
-            fill: false,
-            tension: 0.3
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
-        stacked: false,
-        scales: {
-          y1: {
-            type: 'linear',
-            position: 'left',
-            min: 0,
-            max: 5,
-            title: { display: true, text: '평균 집중도' }
-          },
-          y2: {
-            type: 'linear',
-            position: 'right',
-            min: 0,
-            max: 100,
-            title: { display: true, text: '목표 달성률 (%)' },
-            grid: { drawOnChartArea: false }
-          }
+    
+    if (dateLabels.length === 0) {
+        const chartContainer = document.getElementById('growthChartSimple').closest('.chart-container');
+        if (chartContainer) {
+            chartContainer.innerHTML = '<p class="no-data-message">' +
+                "세션 기록이 쌓이면 당신의 집중력과 목표 달성률 변화를 한눈에 볼 수 있어요! <br>" +
+                "꾸준히 기록하며 성장 곡선을 그려나가세요! 🌱" +
+                '</p>';
         }
-      }
-    });
+    } else {
+        new Chart(ctxGrowth, {
+            type: 'line',
+            data: {
+                labels: dateLabels,
+                datasets: [
+                    {
+                        label: '📈 평균 집중도 (1~5)',
+                        data: focusValuesDaily,
+                        borderColor: 'green',
+                        backgroundColor: 'rgba(0,128,0,0.1)',
+                        yAxisID: 'y1',
+                        fill: false,
+                        tension: 0.3
+                    },
+                    {
+                        label: '🎯 목표 달성률 (%)',
+                        data: goalValuesDaily,
+                        borderColor: 'orange',
+                        backgroundColor: 'rgba(255,165,0,0.1)',
+                        yAxisID: 'y2',
+                        fill: false,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                stacked: false,
+                scales: {
+                    y1: {
+                        type: 'linear',
+                        position: 'left',
+                        min: 0,
+                        max: 5,
+                        title: { display: true, text: '평균 집중도' }
+                    },
+                    y2: {
+                        type: 'linear',
+                        position: 'right',
+                        min: 0,
+                        max: 100,
+                        title: { display: true, text: '목표 달성률 (%)' },
+                        grid: { drawOnChartArea: false }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                }
+            }
+        });
+    }
   </script>
 </body>
 </html>
