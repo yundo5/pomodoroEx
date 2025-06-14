@@ -2,6 +2,8 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from modules import recorder
 from datetime import datetime
+from flask_limiter import Limiter  # 🔧 추가
+from flask_limiter.util import get_remote_address  # 🔧 추가
 import json
 import requests
 import toml
@@ -9,7 +11,10 @@ import collections # Counter 사용을 위해 import (필요 없으면 제거 �
 
 app = Flask(__name__)
 app.secret_key = 'your_very_secret_key_here_for_security' # 실제 배포 시에는 더 복잡한 키 사용 권장
-
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address
+)
 CONFIG_FILE = 'config.toml' # config.toml 파일 경로
 
 # ───────────────────────────────────────────────────
@@ -163,6 +168,7 @@ def stats():
 # ───────────────────────────────────────────────────
 # OpenAI API를 통한 포모도로 설정 제안 엔드포인트
 # ───────────────────────────────────────────────────
+@limiter.limit("3 per minute")
 @app.route('/api/suggest_pomodoro', methods=['GET'])
 def suggest_pomodoro():
     category = request.args.get('category', '미분류')
