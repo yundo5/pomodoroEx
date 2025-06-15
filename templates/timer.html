@@ -11,19 +11,107 @@
       66%  { background-color: #7AC8F5; }
       100% { background-color: #82E891; }
     }
+
     #main-body.focus-gradient {
       animation: focusGradient 9s ease-in-out infinite;
       background-image: none !important;
     }
+
     #main-body.break-solid {
       animation: none !important;
       background-image: none !important;
       background-color: rgba(255, 0, 0, 0.3) !important;
     }
+
     #modeIcon {
+      font-size: 1.4rem;
+      margin: 0 10px;
+    }
+
+    .bottom-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: white;
+      color: black;
+      padding: 20px 40px;
+      flex-wrap: nowrap;
+      gap: 30px;
+    }
+
+    .group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #volumeRange {
+      width: 160px;
+      height: 6px;
+    }
+
+    .repeat-control-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .repeat-btn {
+      border: 2px solid #222;
+      background: none;
+      color: #222;
       font-size: 1.2rem;
-      margin: 0 16px;
-      vertical-align: middle;
+      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .flat-button {
+      padding: 10px 24px;
+      border-radius: 12px;
+      font-size: 1rem;
+      border: 2px solid black;
+      cursor: pointer;
+    }
+
+    .pause-button {
+      background-color: skyblue;
+      color: black;
+    }
+
+    .stop-button {
+      background-color: red;
+      color: white;
+    }
+
+    #backButton {
+      background-color: skyblue;
+      color: black;
+      border: 2px solid black;
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1rem;
     }
   </style>
 </head>
@@ -33,35 +121,43 @@
       <div id="timerDisplay">준비 중...</div>
     </div>
 
+    <!-- ✅ 하단 옵션 그룹별 정렬 -->
     <div class="bottom-options">
-      <button id="backButton">← 뒤로가기</button>
 
-      <label class="checkbox-label">
-        <input type="checkbox" id="bgToggle" checked />
-        배경 애니메이션 ON
-      </label>
-
-      <div class="volume-control">
-        <label for="volumeRange">배경음악</label>
-        <input type="range" id="volumeRange" min="0" max="100" value="100" />
+      <div class="group">
+        <button id="backButton">← 뒤로가기</button>
       </div>
 
-      <div class="repeat-control-box">
+      <div class="group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="bgToggle" checked />
+          배경 애니메이션 ON
+        </label>
+        <div class="volume-control">
+          <label for="volumeRange">배경음악</label>
+          <input type="range" id="volumeRange" min="0" max="100" value="100" />
+        </div>
+      </div>
+
+      <div class="group repeat-control-box">
         <span id="currentCountDisplay">현재 반복횟수: 1</span>
         <span class="max-count">
           최대 반복횟수:
           <button id="minusRepeat" class="repeat-btn">−</button>
-          <span id="repeatCountDisplay"></span>
+          <span id="repeatCountDisplay">1</span>
           <button id="plusRepeat" class="repeat-btn">＋</button>
         </span>
       </div>
 
-      <span id="modeIcon">☀️</span>
+      <div class="group">
+        <span id="modeIcon">☀️</span>
+      </div>
 
-      <div class="control-buttons">
+      <div class="group control-buttons">
         <button id="pauseBtn" class="flat-button pause-button">⏸ 일시정지</button>
         <button id="stopBtn" class="flat-button stop-button">⏹ 종료하기</button>
       </div>
+
     </div>
   </div>
 
@@ -80,11 +176,11 @@
     let seconds = workMinutes * 60;
     let bgIndex = 1;
     let currentThemeIndex = 0;
-    const themes = ["땅", "산", "하늘", "성치군", "우주"];
+    const themes = ["땅", "산", "하늘", "성층권", "우주"];
     const totalImages = 12;
     let currentTheme = themes[currentThemeIndex];
     let backgroundAnimationOff = false;
-    let lastImagePath = ""; // 일시정지 전 이미지 경로
+    let lastImagePath = "";
 
     const display = document.getElementById("timerDisplay");
     const pauseBtn = document.getElementById("pauseBtn");
@@ -106,29 +202,34 @@
       maxpomocount++;
       repeatDisplay.textContent = maxpomocount;
     });
+
     minusBtn.addEventListener("click", () => {
       if (maxpomocount > 1) {
         maxpomocount--;
         repeatDisplay.textContent = maxpomocount;
       }
     });
+
     bgToggle.addEventListener("change", () => {
       backgroundAnimationOff = !bgToggle.checked;
       applyBackground();
     });
+
     volumeRange.addEventListener("input", () => {
       bgMusic.volume = volumeRange.value / 100;
     });
+
     document.getElementById("backButton").addEventListener("click", () => {
       window.location.href = "/session";
     });
+
     pauseBtn.addEventListener("click", togglePause);
     stopBtn.addEventListener("click", stopTimer);
 
     function updateDisplay() {
       const m = Math.floor(seconds / 60);
       const s = seconds % 60;
-      display.textContent = `${m}분 ${s < 10 ? "0"+s : s}초`;
+      display.textContent = `${m}분 ${s < 10 ? "0" + s : s}초`;
     }
 
     function preloadAndSetBackground(src) {
@@ -137,9 +238,16 @@
         bodyElem.style.backgroundImage = `url('${src}')`;
       };
       img.onerror = () => {
-        console.error("이미지 로드 실패:", src);
-        const errorMsg = encodeURIComponent("이미지가 없거나 이름이 잘못되었습니다.");
-        window.location.href = `/error?message=${errorMsg}`;
+        console.warn("이미지 로드 실패:", src);
+        if (!isBreak) {
+          bgIndex++;
+          if (bgIndex > totalImages) {
+            bgIndex = 1;
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            currentTheme = themes[currentThemeIndex];
+          }
+          changeBackground();
+        }
       };
       img.src = src;
     }
@@ -151,7 +259,7 @@
         : `/static/images/나무/${currentTheme}/${currentTheme}-나무${bgIndex}.png`;
       preloadAndSetBackground(path);
       if (!isBreak) {
-        lastImagePath = path; // 저장
+        lastImagePath = path;
         bgIndex++;
         if (bgIndex > totalImages) {
           bgIndex = 1;
@@ -163,15 +271,14 @@
 
     function applyBackground() {
       if (isPaused) return;
-      bodyElem.classList.remove('focus-gradient','break-solid');
-      bodyElem.style.backgroundImage = 'none';
+      bodyElem.classList.remove("focus-gradient", "break-solid");
+      bodyElem.style.backgroundImage = "none";
       if (backgroundAnimationOff) {
-        if (isBreak) bodyElem.classList.add('break-solid');
-        else bodyElem.classList.add('focus-gradient');
+        isBreak ? bodyElem.classList.add("break-solid") : bodyElem.classList.add("focus-gradient");
       } else {
         changeBackground();
       }
-      modeIcon.textContent = isBreak ? '🌕' : '☀️';
+      modeIcon.textContent = isBreak ? "🌕" : "☀️";
     }
 
     function startBackgroundRotation() {
@@ -237,7 +344,7 @@
         bgMusic.pause();
         const pauseImage = `/static/images/나무/${currentTheme}/${currentTheme}-휴식시간.png`;
         preloadAndSetBackground(pauseImage);
-        modeIcon.textContent = '🌕';
+        modeIcon.textContent = "🌕";
       } else {
         pauseBtn.innerHTML = "⏸ 일시정지";
         bgMusic.play().catch(() => {});
@@ -246,7 +353,7 @@
         } else {
           applyBackground();
         }
-        modeIcon.textContent = isBreak ? '🌕' : '☀️';
+        modeIcon.textContent = isBreak ? "🌕" : "☀️";
       }
     }
 

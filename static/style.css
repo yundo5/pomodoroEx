@@ -1,4 +1,3 @@
-style.css
 /* ===== 공통 초기화 ===== */
 html, body {
   margin: 0;
@@ -6,13 +5,13 @@ html, body {
   font-family: sans-serif;
 }
 
-/* ===== 세션 설정 화면 (session.html) ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* ===== 세션 설정 화면 ===== */
 body.bg-session {
-  background-image: url('/static/index-background.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-color: #ffffff;
+  background: url('/static/index-background.jpg') center/cover fixed no-repeat;
   color: #333;
   min-height: 100vh;
   overflow-y: auto;
@@ -43,17 +42,14 @@ body.bg-session {
   background-color: #a0522d;
   padding: 30px 20px;
   color: white;
-  box-sizing: border-box;
 }
 
 .right-box {
   background-color: rgba(255, 255, 255, 0.95);
   padding: 40px;
   border-radius: 0 20px 20px 0;
-  box-sizing: border-box;
 }
 
-/* ✅ 드롭다운 너비 줄이기 */
 .right-box select {
   max-width: 160px;
 }
@@ -105,13 +101,12 @@ textarea, input, select {
   color: white;
   font-weight: bold;
   text-align: center;
-  text-decoration: none;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
 .start-button:hover {
-  background-color: #7d2f0f; /* hover 시 더 진한 색상 */
+  background-color: #7d2f0f;
 }
 
 .start-button-wrapper {
@@ -119,7 +114,8 @@ textarea, input, select {
   text-align: center;
   margin-top: 30px;
 }
-/* ===== 타이머 화면 (timer.html) ===== */
+
+/* ===== 타이머 화면 ===== */
 body.timer-page {
   height: 100vh;
   overflow: hidden;
@@ -135,10 +131,7 @@ body.timer-page {
 
 #main-body {
   flex: 1 0 auto;
-  background-image: url('/static/images/your-background.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: url('/static/images/your-background.jpg') center/cover no-repeat;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -154,15 +147,21 @@ body.timer-page {
 }
 
 .bottom-options {
-  height: 100px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 16px 20px;
   background-color: white;
+  color: black;
+  text-align: center;
+}
+
+.group {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 0 20px;
-  color: black;
-  flex-shrink: 0;
+  gap: 16px;
 }
 
 #backButton {
@@ -199,8 +198,7 @@ body.timer-page {
 
 .control-buttons {
   display: flex;
-  gap: 10px;
-  margin-left: auto;
+  gap: 12px;
 }
 
 .flat-button {
@@ -221,22 +219,15 @@ body.timer-page {
   color: white;
 }
 
-.grid-2x2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* 두 열 */
-    grid-template-rows: auto auto;  /* 두 행 */
-    gap: 30px;
-}
 textarea.wide-textarea {
   width: 100%;
   height: 180px;
-  font-size: 16px;
   resize: vertical;
   padding: 10px;
   border-radius: 6px;
   border: 1px solid #aaa;
 }
-/* ===== 반복 횟수 조절 버튼 ===== */
+
 .repeat-control-box {
   display: flex;
   align-items: center;
@@ -244,6 +235,7 @@ textarea.wide-textarea {
   margin: 20px 0;
   justify-content: center;
 }
+
 .repeat-btn {
   border: 2px solid #222;
   background: none;
@@ -255,9 +247,11 @@ textarea.wide-textarea {
   cursor: pointer;
   outline: none;
 }
+
 .repeat-btn:active {
   background: #f0f0f0;
 }
+
 #repeatCountDisplay {
   min-width: 40px;
   text-align: center;
