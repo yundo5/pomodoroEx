@@ -64,6 +64,6 @@
 ## 🔧 실행 방법
 
 # 프로젝트 클론 및 실행
-git clone https://github.com/Yundo5/pomodoroEx.git
-cd pomodoro_web
-pip install -r runpomodoro.bat
+-git clone https://github.com/Yundo5/pomodoroEx.git
+-cd pomodoro_web
+-pip install -r runpomodoro.bat
