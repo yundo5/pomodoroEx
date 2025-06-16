@@ -36,7 +36,7 @@
 |------|------|
 | 1단계 | 기능 정의 및 컨셉 구상 |
 | 2단계 | UI 구성, 타이머/버튼 구현 |
-| 3단계 | 목표 설정 및 객체 인식 기능 통합 |
+| 3단계 | 목표 설정 및 배경 이미지 변화 구현 |
 | 4단계 | 디자인 및 그래픽 완성 |
 | 5단계 | 테스트 및 발표 자료 제작 |
 
@@ -63,14 +63,7 @@
 
 ## 🔧 실행 방법
 
-```bash
-# 가상 환경 구성
-conda create -n domodoro python=3.9 -y
-conda activate domodoro
-pip install --upgrade pip
-
 # 프로젝트 클론 및 실행
-git clone https://github.com/Jyw314/pomodoroEx.git
-cd pomodoroEx
-pip install -r requirements.txt
-streamlit run app.py
+git clone https://github.com/Yundo5/pomodoroEx.git
+cd pomodoro_web
+pip install -r runpomodoro.bat
